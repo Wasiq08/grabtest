@@ -16,10 +16,16 @@ angular.module('app.routes', [])
     controller: 'loginCtrl'
   })
 
-  .state('signUp', {
+  .state('signup', {
     url: '/signup',
     templateUrl: 'templates/signUp.html',
     controller: 'signUpCtrl'
+  })
+
+  .state('welcome', {
+    url: '/welcome',
+    templateUrl: 'templates/welcome.html',
+    controller: 'welcomeCtrl'
   })
 
   .state('process', {

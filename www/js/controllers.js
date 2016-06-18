@@ -8,6 +8,10 @@ angular.module('app.controllers', [])
 
 })
    
+.controller('welcomeCtrl', function($scope) {
+
+})
+   
 .controller('processCtrl', function($scope) {
 
 })
