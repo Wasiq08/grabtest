@@ -1,7 +1,76 @@
-<ion-view title="Dashboard" hide-nav-bar="true" id="page10" style="background-color:#F4F5ED;" class=" ">
-    <ion-content padding="true" class="manual-ios-statusbar-padding" scroll="false">
-        <div class="item item-body " id="dashboard-list-item-container1">
-            <p id="dashboard-markdown15" style="margin-top:0px;color:#000000;text-align:center;" class=" ">Home Screen shall be displayed here</p>
+<ion-view title="Food Monger" hide-back-button="true">
+    <ion-nav-buttons side="right">
+        <div class="buttons">
+            <button class="button button-icon ion-ios-search-strong" style="color: white;"></button>
         </div>
+    </ion-nav-buttons>
+    <ion-nav-buttons side="left">
+        <button menu-toggle="left" class="button button-icon icon ion-navicon" style="color: white;"></button>
+    </ion-nav-buttons>
+    <ion-content class="has-header has-footer fd-bg" scroll="true">
+        <div ng-repeat="x in feeds" style="width: 100%; position: relative; margin-bottom: 10px; background-color: rgba(255,255,255,  0.96);">
+            <a ui-sref="sidemenu.profile">
+                <div style="width: 50px; height: 55px; margin-left: 15px;padding-bottom: 5px; padding-top: 5px;">
+                    <img ng-src="{{x.user_src}}" class="fd-img fd-img-br border-style">
+                </div>
+            </a>
+            <div class="ft-14" style="position: absolute; width: 100%; top: 15px; left: 70px">
+                <b>{{x.user_name}}</b>
+            </div>
+            <div style="width: 100%; height: 200px;">
+                <img ng-src="{{x.src}}" class="fd-img">
+            </div>
+            <div class="pll prm pts pbm">
+                <a ui-sref="sidemenu.foodprofile"><p class="ft-18 ptx"><b>{{x.name}}</b></p></a> 
+                <p class="pts"><i class="ion-soup-can-outline"></i><span class="plx">Dessert</span> <i class="ion-clock plm"></i><span class="plx">16 Min</span><i class="ion-ios-location plm"></i><span class="plx">Bar-b-q Tonight</span></p>
+            </div>
+            <div class="pll ptm pbm ft-24 border-style-top border-style-bottom">
+                <p><i class="ion-ios-chatboxes-outline"></i><span class="plm ft-18">Comment</span>
+                    <i class="ion-android-favorite-outline pll"></i><span class="plm ft-18">Like</span><i class="ion-share pll"></i><span class="plm ft-18">Share</span></p>
+            </div>
+            <div style="position: absolute; top: 100px; background-color: #ee3255; color: white; right: 0px; font-size: 32px;height: 40px;padding-top: 8px; padding-left: 8px; padding-right: 8px; padding-bottom: 8px;">
+                {{x.price}}
+            </div>
+            <!--             <div style="height: 50px; font-size: 40px; left: 50px;">
+                <i class="ion-thumbsup"></i>
+            </div> -->
+        </div>
+        <!--         <div ng-repeat="x in feeds" style="width: 100%; height: 260px; position: relative;">
+            <div style="width: 100%; height: 260px; position: relative;">
+                <img ng-src="{{x.src}}" class="fd-img" />
+                <div style="margin-top: -40px; height: 75px; z-index: 2; position: relative;">
+                    <div class="pbs" style="width: 75px; height: 75px; margin-left: 20px;">
+                        <img ng-src="{{x.user_src}}" class="fd-img fd-img-br">
+                    </div>
+                </div>
+                <div style="margin-top: -40px; background-color: rgba(255,255,255,0.8); position: relative;z-index: 1; padding-left: 100px;">
+                    <p class="ft-14 ptx" style="width: 150px;"><b>{{x.name}}</b></p>
+                    <p class="ptn"><i class="ion-soup-can-outline"></i><span class="plx">Dessert</span> <i class="ion-clock pls"></i><span class="plx">16 Min</span></p>
+                </div>
+                <div class="fd-r-float ptm" style="position: relative; z-index: 3; margin-top: -50px; height: 50px; font-size: 40px; padding-right: 50px;">
+                    <i class="ion-ios-chatboxes-outline"></i>
+                </div>
+                <div class="fd-r-float ptm" style="position: relative; z-index: 3; margin-top: -50px; height: 50px; font-size: 40px; padding-right: 5px;">
+                    <i class="ion-thumbsup"></i>
+                </div>
+                <div class="prm plm fd-r-float" style="position: relative; z-index: 4; margin-top: -250px; background-color: #ee3255;height: 40px;">
+                    <p style="    font-size: 30px;
+    padding-top: 8px;">{{x.price}}</p>
+                </div>
+            </div>
+        </div> -->
     </ion-content>
+    <ion-footer-bar>
+        <div class="tabs tabs-icon-only">
+            <a nav-clear class="tab-item disable-user-behavior active" title="Home" nav-clear ui-sref="snd.home">
+                <i class="icon ion-home"></i><span class="tab-title ng-binding" ng-bind-html="title"></span>
+            </a>
+            <a ng-click="getpicture()" nav-clear class="tab-item disable-user-behavior" title="Chat" icon-on="ion-ios7-filing" icon-off="ion-ios7-filing-outline" ui-sref="snd.chat">
+                <i class="icon ion-chatbubbles"></i><span class="tab-title ng-binding" ng-bind-html="title"></span>
+            </a>
+            <a nav-clear class="tab-item disable-user-behavior" title="Drink" icon-on="ion-ios7-filing" icon-off="ion-ios7-filing-outline" ui-sref="snd.drink">
+                <i class="icon ion-wineglass"></i><span class="tab-title ng-binding" ng-bind-html="title"></span>
+            </a>
+        </div>
+    </ion-footer-bar>
 </ion-view>

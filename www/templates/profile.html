@@ -1,0 +1,57 @@
+<ion-view title="Food Monger" hide-back-button="true">
+    <ion-nav-buttons side="left">
+        <div class="buttons">
+            <button class="button button-icon ion-ios-arrow-back" style="color: white;" nav-direction="back" ng-click="$ionicGoBack(); "></button>
+        </div>
+    </ion-nav-buttons>
+    <ion-nav-buttons side="right">
+        <div class="buttons">
+            <button class="button button-icon ion-ios-search-strong" style="color: white;"></button>
+        </div>
+    </ion-nav-buttons>
+    <ion-content class="has-header profile-bg">
+        <div class="profile-image">
+            <img src="img/John_Doe.jpg" class="fd-img fd-img-br  border-style border-wd-m">
+        </div>
+        <div class="profile-name ft-24">
+            John Doe
+        </div>
+        <div style="color: white; text-align: center;">
+            <p class="pts"><i class="ion-ios-location"></i><span class="pls">Istanbul, Turkey</span>
+            </p>
+        </div>
+        <div class="ptl pbl plm border-style-top border-style-bottom" style="background-color: #191127; margin-top: 10px; border-top-color: white;border-bottom-color: white;">
+            <div class="fd-m-align ft-16" style="display: inline-block; color: white; width: 30%; ">
+                <p>21</p>
+                <p><b>Posts</b></p>
+            </div>
+            <div class="fd-m-align ft-16" style="display: inline-block; color: white; width: 30%;">
+                <p>151</p>
+                <p><b>Likes</b></p>
+            </div>
+            <div class="fd-m-align ft-16" style="display: inline-block; color: white;width: 30%;">
+                <p>35</p>
+                <p><b>Views</b></p>
+            </div>
+        </div>
+        <div ng-repeat="x in feeds" style="width: 100%; position: relative; margin-bottom: 10px; background-color: rgba(255,255,255, 0.96);">
+            <div style="width: 100%; height: 200px;">
+                <img ng-src="{{x.src}}" class="fd-img">
+            </div>
+            <div class="pll prm pts pbm">
+                <p class="ft-18 ptx"><b>{{x.name}}</b></p>
+                <p class="pts"><i class="ion-soup-can-outline"></i><span class="plx">Dessert</span> <i class="ion-clock plm"></i><span class="plx">16 Min</span><i class="ion-ios-location plm"></i><span class="plx">Bar-b-q Tonight</span></p>
+            </div>
+            <div class="pll ptm pbm ft-24 border-style-top border-style-bottom">
+                <p><i class="ion-ios-chatboxes-outline"></i><span class="plm ft-18">Comment</span>
+                    <i class="ion-android-favorite-outline pll"></i><span class="plm ft-18">Like</span><i class="ion-share pll"></i><span class="plm ft-18">Share</span></p>
+            </div>
+            <div style="position: absolute; top: 100px; background-color: #ee3255; color: white; right: 0px; font-size: 32px;height: 40px;padding-top: 8px; padding-left: 8px; padding-right: 8px; padding-bottom: 8px;">
+                {{x.price}}
+            </div>
+            <!--             <div style="height: 50px; font-size: 40px; left: 50px;">
+                <i class="ion-thumbsup"></i>
+            </div> -->
+        </div>
+    </ion-content>
+</ion-view>

@@ -1,0 +1,40 @@
+<ion-view view-title="Share Food!" hide-back-button="true">
+    <ion-nav-buttons side="left">
+        <div class="buttons">
+            <button class="button button-icon ion-ios-arrow-back" style="color: white;" nav-direction="back" ng-click="$ionicGoBack(); "></button>
+        </div>
+    </ion-nav-buttons>
+    <ion-nav-buttons side="right">
+        <div class="buttons">
+            <button class="button button-icon" style="color: white;" ng-click="creatPost()">Create</button>
+        </div>
+    </ion-nav-buttons>
+    <ion-content>
+        <div class="pbl" style="width: 100%; height: 240px;" ng-class="imgobj.class">
+            <img ng-src="{{imgobj.image}}" class="fd-img">
+        </div>
+        <div style="width: 90%; height: 100px; position: relative; border-bottom-style: solid; border-bottom-width: thin; border-bottom-color:  rgba(0,0,0,0.3) ; margin-left: 5%;">
+            <div style="position: absolute; width: 80px; height: 80px; padding: 10px;">
+                <img src="img/John_Doe.jpg" class="fd-img fd-img-br">
+            </div>
+            <div style="position: absolute; left: 30%; width: 70%; padding-top: 30px;">
+                <textarea style="width: 100%; height: 65px;" placeholder="Write your review here!"></textarea>
+            </div>
+        </div>
+        <div on-tap="selectCategory()" class="ptm plm prm pbm" style="margin-left: 5%;width: 90%;border-bottom-style: solid; border-bottom-width: thin; border-bottom-color:  rgba(0,0,0,0.1) ;">
+            <p><b><i class="ion-pound"></i><span class="plm">Add Tags</span></b></p>
+        </div>
+        <div on-tap="selectLocation()" class="ptm plm prm pbm" style="margin-left: 5%;width: 90%;border-bottom-style: solid; border-bottom-width: thin; border-bottom-color: rgba(0,0,0,0.1) ;">
+            <p><b><i class="ion-ios-location"></i><span class="plm">{{final_obj.location.formatted_address}}</span></b></p>
+        </div>
+        <div class="ptm plm prm pbm" style="margin-left: 5%;width: 90%;border-bottom-style: solid; border-bottom-width: thin; border-bottom-color:  rgba(0,0,0,0.1) ;" modal-select="" ng-model="selectCategory" options="selectables" modal-title="Select Category">
+            <div class="option">
+                {{option.category_name}}
+            </div>
+            <p><b><i class="ion-ios-pricetags"></i><span class="plm">{{selectCategory.category_name}}</span></b></p>
+        </div>
+        <div class="ptm plm prm pbm" style="margin-left: 5%;width: 90%;border-bottom-style: solid; border-bottom-width: thin; border-bottom-color: rgba(0,0,0,0.1) ;">
+            <p><b><i class="ion-cash"></i><span class="plm">Add Price</span></b></p>
+        </div>
+    </ion-content>
+</ion-view>

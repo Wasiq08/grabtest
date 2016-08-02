@@ -1,27 +1,58 @@
-<ion-view title="Login" hide-nav-bar="true" id="page1" style="background-color:#F4F5ED;" class=" ">
-    <ion-content padding="true" class="manual-ios-statusbar-padding" scroll="false">
-        <div class="">
-            <img src="img/zypVioHTReBwH9gvE67c_watermelon4.png" width="40%" height="auto" style="display: block; margin-left: auto; margin-right: auto;">
+<ion-view>
+    <ion-content class="fd-bg">
+        <!--  <img src="img/bg2.jpg" class="fd-img"> -->
+        <div style="width: 100%; height: 100%;">
+            <!--             <div class="ptl" style="height: 100px; width: 80px; margin-left: auto; margin-right: auto; ">
+                <img src="img/newlog.png" class="fd-img">
+            </div> -->
+            <div class="ft-24" style="color: white; text-align: center; margin-top: 100px;">
+                <b>Food Monger</b>
+            </div>
+            <div class="pll prl ptl pbl">
+                <form id="login-form4" class="list " style="margin-top: 10px;">
+                    <label class="item item-input" id="login-input3">
+                        <span class="input-label" style="color: black; ">Email</span>
+                        <input type="email" placeholder="Enter here!" style="color: black; padding-right: 0px;" ng-model="users.user_email">
+                    </label>
+                    <label class="item item-input" id="login-input5">
+                        <span class="input-label" style="color: black;">Password</span>
+                        <input type="password" placeholder="Enter here!" style="color: black; padding-right: 0px;" ng-model="users.password">
+                    </label>
+                </form>
+            </div>
+            <div class="prl pll" on-tap="login()">
+                <div style="color: white; background-color: #ff6f29; " >
+                    <p class="ptm pbm ft-14" style="text-align: center;"><b>Login</b></p>
+                </div>
+                <!-- <a href="tel:" id="login-button2" style="font-weight:600;font-size:10px;border-radius:0px 0px 0px 0px; color: white; background-color: #ff6f29; height: 15px;" class=" button button-block" on-tap="login()">Login</a> -->
+            </div>
+            <p id="login-markdown1" class="ptm pll" style="color:white;text-align:center;" class=" ">You can Also Login With..</p>
+            <div class="prl pll ptm pbm">
+                <div style="color: white; background-color: #3b5998; ">
+                    <p class="ptm pbm ft-12"><b><i class="ion-social-facebook ft-24" style="float: left; margin-left: 20px;"></i></b><span style="margin-left: 35%;"><b>Facebook</b></span></p>
+                </div>
+                <!-- <a href="tel:" id="login-button2" style="font-weight:600;font-size:10px;border-radius:0px 0px 0px 0px; color: white; background-color: #3b5998;" class=" button button-block" on-tap="login()">Facebook</a> -->
+            </div>
+            <div class="prl pll pbm">
+                <div style="color: white; background-color: #dc4a38; ">
+                    <p class="ptm pbm ft-12"><b><i class="ion-social-googleplus ft-24" style="float: left; margin-left: 20px;"></i></b><span style="margin-left: 30%;"><b>Google Plus</b></span></p>
+                </div>
+                <!-- <a href="tel:" id="login-button2" style="font-weight:600;font-size:10px;border-radius:0px 0px 0px 0px; color: white; background-color: #dc4a38;" class=" button button-block" on-tap="login()">Google +</a> -->
+            </div>
+            <div class="prl pll pbm">
+                <div style="color: white; background-color: #00b7f3; ">
+                    <p class="ptm pbm ft-12"><b><i class="ion-social-twitter ft-24" style="float: left; margin-left: 20px;"></i></b><span style="margin-left: 32%;"><b>Twitter</b></span></p>
+                </div>
+                <!-- <a href="tel:" id="login-button2" style="font-weight:600;font-size:10px;border-radius:0px 0px 0px 0px; color: white; background-color: #00b7f3;" class=" button button-block" on-tap="login()">Twitter</a> -->
+            </div>
+            <!--                 <div id="login-button-bar2" class=" button-bar ">
+                    <button id="login-button10" style="font-weight:600;border-radius:1px 1px 1px 1px;" class=" button button-positive button-large button-block button-clear icon ion-social-facebook-outline "></button>
+                    <button id="login-button11" style="border-radius:50px 50px 50px 50px;" class=" button button-assertive button-large button-block button-clear icon ion-social-googleplus "></button>
+                    <button id="login-button12" class=" button button-calm button-large button-block button-clear icon ion-social-twitter-outline "></button>
+                </div> -->
+            <div style="margin-top: 25px;">
+                <p id="login-markdown3" style="color:white;font-size:15px;text-align:center;" class=" ">Don't Have An Account...? <a style="color: white;" ui-sref="signup"><b>Sign Up</b></a></p>
+            </div>
         </div>
-        <form id="login-form4" class="list ">
-            <label class="item item-input " id="login-input3">
-                <span class="input-label">Email</span>
-                <input type="email" placeholder="">
-            </label>
-            <label class="item item-input " id="login-input5">
-                <span class="input-label">Password</span>
-                <input type="password" placeholder="">
-            </label>
-        </form>
-        <a href="tel:" id="login-button2" style="font-weight:600;font-size:20px;border-radius:0px 0px 0px 0px;" class=" button button-balanced  button-block " ui-sref="welcome">Login</a>
-        <p id="login-markdown1" style="color:#000000;text-align:center;" class=" ">You can Also Login With..</p>
-        <div id="login-button-bar2" class=" button-bar ">
-            <button id="login-button10" style="font-weight:600;border-radius:1px 1px 1px 1px;" class=" button button-positive button-large button-block button-clear icon ion-social-facebook-outline "></button>
-            <button id="login-button11" style="border-radius:50px 50px 50px 50px;" class=" button button-assertive button-large button-block button-clear icon ion-social-googleplus "></button>
-            <button id="login-button12" class=" button button-calm button-large button-block button-clear icon ion-social-twitter-outline "></button>
-        </div>
-        <p id="login-markdown3" style="color:#000000;font-size:15px;text-align:center;" class=" ">Don't Have An Account...?</p>
-        <div class="spacer" style="width: 300px; height: 0px;"></div>
-        <button id="login-button13" ui-sref="signup" style="color:#000000;" class=" button button-light  button-block ">Sign Up</button>
     </ion-content>
 </ion-view>

@@ -2,64 +2,114 @@ angular.module('app.routes', [])
 
 .config(function($stateProvider, $urlRouterProvider) {
 
-  // Ionic uses AngularUI Router which uses the concept of states
-  // Learn more here: https://github.com/angular-ui/ui-router
-  // Set up the various states which the app can be in.
-  // Each state's controller can be found in controllers.js
-  $stateProvider
-    
-  
+    // Ionic uses AngularUI Router which uses the concept of states
+    // Learn more here: https://github.com/angular-ui/ui-router
+    // Set up the various states which the app can be in.
+    // Each state's controller can be found in controllers.js
+    $stateProvider
+        .state('sidemenu', {
+            url: '/sidemenu',
+            templateUrl: 'templates/sidemenu.html',
+            abstract: true
+        })
 
-      .state('login', {
-    url: '/main',
-    templateUrl: 'templates/login.html',
-    controller: 'loginCtrl'
-  })
+    .state('sidemenu.dashboard', {
+        url: '/dashboard',
+        views: {
+          'menuContent' : {
+              templateUrl: 'templates/dashboard.html',
+              controller: 'dashboardCtrl'
+          }
+        }
+    })
 
-  .state('signup', {
-    url: '/signup',
-    templateUrl: 'templates/signUp.html',
-    controller: 'signUpCtrl'
-  })
+    .state('sidemenu.profile', {
+        url: '/profile', 
+        views: {
+            'menuContent' : {
+                templateUrl: 'templates/profile.html',
+                controller: 'ProfileCtrl'
+            }
+        }
+    })
 
-  .state('welcome', {
-    url: '/welcome',
-    templateUrl: 'templates/welcome.html',
-    controller: 'welcomeCtrl'
-  })
+    .state('sidemenu.foodprofile', {
+        url: '/foodprofile',
+        views:{
+            'menuContent' : {
+                templateUrl : 'templates/foodprofile.html',
+                controller: 'FoodProfileCtrl'
+            }
+        }
+        
+    })
 
-  .state('process', {
-    url: '/process',
-    templateUrl: 'templates/process.html',
-    controller: 'processCtrl'
-  })
+    .state('sidemenu.imagefilter', {
+        url: '/imagefilter',
+        views: {
+            'menuContent' : {
+                templateUrl: 'templates/imagefilter.html',
+                controller: 'ImageFilterCtrl'
+            }
+        }
+    })
 
-  .state('process1', {
-    url: '/process1',
-    templateUrl: 'templates/process1.html',
-    controller: 'process1Ctrl'
-  })
+    .state('sidemenu.createpost', {
+        url: '/createpost',
+        views: {
+            'menuContent' : {
+                templateUrl: 'templates/createpost.html',
+                controller: 'CreatePostCtrl'
+            }
+        }
+    })
 
-  .state('process2', {
-    url: '/process2',
-    templateUrl: 'templates/process2.html',
-    controller: 'process2Ctrl'
-  })
+    .state('login', {
+        url: '/main',
+        templateUrl: 'templates/login.html',
+        controller: 'loginCtrl'
+    })
 
-  .state('process3', {
-    url: '/process3',
-    templateUrl: 'templates/process3.html',
-    controller: 'process3Ctrl'
-  })
+    .state('signup', {
+        url: '/signup',
+        templateUrl: 'templates/signUp.html',
+        controller: 'signUpCtrl'
+    })
 
-  .state('dashboard', {
-    url: '/dashboard',
-    templateUrl: 'templates/dashboard.html',
-    controller: 'dashboardCtrl'
-  })
+    .state('welcome', {
+        url: '/welcome',
+        templateUrl: 'templates/welcome.html',
+        controller: 'welcomeCtrl'
+    })
 
-$urlRouterProvider.otherwise('/main')
+    .state('process', {
+        url: '/process',
+        templateUrl: 'templates/process.html',
+        controller: 'processCtrl'
+    })
 
-  
+    .state('process1', {
+        url: '/process1',
+        templateUrl: 'templates/process1.html',
+        controller: 'process1Ctrl'
+    })
+
+    .state('process2', {
+        url: '/process2',
+        templateUrl: 'templates/process2.html',
+        controller: 'process2Ctrl'
+    })
+
+    .state('process3', {
+        url: '/process3',
+        templateUrl: 'templates/process3.html',
+        controller: 'process3Ctrl'
+    })
+
+
+
+    $urlRouterProvider.otherwise('/main')
+
+
 
 });

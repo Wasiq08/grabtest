@@ -1,0 +1,22 @@
+<ion-view hide-back-button="true">
+    <ion-nav-buttons side="left">
+        <div class="buttons">
+            <button class="button button-icon ion-ios-arrow-back" style="color: white;" nav-direction="back" ng-click="$ionicGoBack(); "></button>
+        </div>
+    </ion-nav-buttons>
+    <ion-nav-buttons side="right">
+        <div class="buttons">
+            <button class="button button-icon" style="color: white;" ng-click="next()">Next</button>
+        </div>
+    </ion-nav-buttons>
+    <ion-content>
+        <div style="width: 100%; height: 300px;" ng-class="class">
+            <img class="fd-img" ng-src="{{$root.imageData || imageurl}}">
+        </div>
+        <div style="margin-top: 10px;">
+            <hscroller>
+                <hcard ng-repeat="item in media.album" on-tap="changeClass($index)" index="{{$index}}" ng-click="changeClass($index)" desc="{{item.desc}}" image="{{media.src}}" ng-class="item.class"></hcard>
+            </hscroller> 
+        </div>
+    </ion-content>
+</ion-view>

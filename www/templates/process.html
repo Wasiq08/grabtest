@@ -1,18 +1,28 @@
 <ion-view title="Process" hide-nav-bar="true" id="page5" style="background-color:#F4F5ED;" class=" ">
-    <ion-content padding="true" class="manual-ios-statusbar-padding" scroll="false">
-        <div class="">
-            <img src="img/zypVioHTReBwH9gvE67c_watermelon4.png" width="40%" height="auto" style="display: block; margin-left: auto; margin-right: auto;">
+    <ion-content class="fd-bg" scroll="false">
+        <!--         <div class="pts">
+            <img src="img/logo.png" height="30px" style="display: block; margin-left: auto; margin-right: auto;">
+        </div> -->
+        <div class="ft-24" style="color: #ff6f29; text-align: center; margin-top: 50px;">
+            <b>Grab-a-Bite!</b>
         </div>
-        <p id="process-markdown16" style="color:#000000;text-align:center;" class=" ">1/4</p>
-        <p id="process-markdown6" style="color:#000000;" class=" ">What categories of food would you like to know about?</p>
-        <form id="process-form8" class="list ">
-            <ion-checkbox>Fruits</ion-checkbox>
-            <ion-checkbox>Drinks</ion-checkbox>
-            <ion-checkbox>Dairy</ion-checkbox>
-            <ion-checkbox>Grocery</ion-checkbox>
-            <ion-checkbox>Snacks</ion-checkbox>
-            <ion-checkbox>Deals</ion-checkbox>
-        </form>
-        <a href="tel:" id="process-button19" style="font-weight:600;font-size:20px;border-radius:0px 0px 0px 0px;" class=" button button-balanced  button-block " ui-sref="process1" >Next</a>
+        <!-- <h3 id="welcome-heading9" style="color:red;text-align:center;" class="ptl"><b>Grab-a-Bite!</b></h3> -->
+        <p id="process-markdown16" style="color:pink;text-align:center;" class=" ">1/4</p>
+        <p class="ptl pll prl pbl" id="process-markdown6" style="color:white;" class="ft-16">What categories of food would you like to know about?</p>
+        <div class="pll prl pbl">
+            <form id="process-form8" class="list ">
+                <ion-checkbox>Fruits</ion-checkbox>
+                <ion-checkbox>Drinks</ion-checkbox>
+                <ion-checkbox>Dairy</ion-checkbox>
+                <ion-checkbox>Grocery</ion-checkbox>
+                <ion-checkbox>Snacks</ion-checkbox>
+                <ion-checkbox>Deals</ion-checkbox>
+            </form>
+        </div>
+        <div class="prl pll" on-tap="$root.navigateState('process1')">
+            <div style="color: white; background-color: #ff6f29; ">
+                <p class="ptm pbm ft-14" style="text-align: center;"><b>Next</b></p>
+            </div>
+        </div>
     </ion-content>
 </ion-view>

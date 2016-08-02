@@ -1,12 +1,23 @@
 <ion-view title="welcome" hide-nav-bar="true" id="page9" style="background-color:#F4F5ED;" class=" ">
-    <ion-content padding="true" class="manual-ios-statusbar-padding" scroll="false">
-        <div class="">
-            <img src="img/zypVioHTReBwH9gvE67c_watermelon4.png" width="40%" height="auto" style="display: block; margin-left: auto; margin-right: auto;">
-        </div>
-        <h3 id="welcome-heading9" style="color:#2B691E;text-align:center;" class=" ">Welcome to Grab-a-Bite</h3>
-        <p id="welcome-markdown11" style="color:#000000;" class=" ">Kindly take our short
-            <strong>survey</strong> so that we may serve you better</p>
-        <p id="welcome-markdown12" style="color:#000000;font-size:20px;text-align:center;" class=" ">It won't take long.</p>
-        <a href="tel:" id="welcome-button23" style="font-weight:600;font-size:20px;border-radius:0px 0px 0px 0px;" class=" button button-balanced  button-block " ui-sref="process">Next</a>
+    <ion-content class="fd-bg" scroll="false"> 
+        
+            <!--         <div class="ptl">
+            <img src="img/logo.png" height="auto" style="display: block; margin-left: auto; margin-right: auto;">
+        </div> -->
+            <div class="ft-24" style="color: white; text-align: center; margin-top: 150px;">
+                <b>Food Monger</b>
+            </div>
+            <h3 id="welcome-heading9" style="color:#ff6f29;text-align:center;" class="ptl"><b>Welcome to Grab-a-Bite</b></h3>
+            <p class="ptl pll prl pbl" id="welcome-markdown11" style="color:white;" class=" ">Kindly take our short
+                <strong>survey</strong> so that we may serve you better!</p>
+            <div class="ptl pll prl pbl">
+                <p id="welcome-markdown12" style="color:white;font-size:20px;text-align:center;" class=" ">It won't take long.</p>
+                <div class="ptl prl pll" on-tap="login()">
+                    <div on-tap="$root.navigateState('process')" style="color: white; background-color: #ff6f29; ">
+                        <p class="ptm pbm ft-14" style="text-align: center;"><b>Next</b></p>
+                    </div>
+                </div>
+            </div>
+        
     </ion-content>
 </ion-view>

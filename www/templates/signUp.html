@@ -1,26 +1,40 @@
-<ion-view title="SignUp" hide-nav-bar="true" id="page3" style="background-color:#F4F5ED;" class=" ">
-    <ion-content padding="true" class="manual-ios-statusbar-padding" scroll="false">
-        <div class="">
-            <img src="img/zypVioHTReBwH9gvE67c_watermelon4.png" width="40%" height="auto" style="display: block; margin-left: auto; margin-right: auto;">
+<ion-view title="SignUp">
+    <ion-header-bar>
+        <div class="buttons">
+            <button class="button button-icon ion-ios-arrow-back" style="color: white;" nav-direction="back" ng-click="$ionicGoBack(); "></button>
         </div>
-        <form id="signUp-form6" class="list ">
-            <label class="item item-input " id="signUp-input6">
-                <span class="input-label">Username</span>
-                <input type="text" placeholder="">
-            </label>
-            <label class="item item-input " id="signUp-input8">
-                <span class="input-label">Email</span>
-                <input type="email" placeholder="">
-            </label>
-            <label class="item item-input " id="signUp-input7">
-                <span class="input-label">Password</span>
-                <input type="password" placeholder="">
-            </label>
-            <label class="item item-input " id="signUp-input9">
-                <span class="input-label">Re-enter password</span>
-                <input type="password" placeholder="">
-            </label>
-        </form>
-        <a href="tel:" id="signUp-button14" style="font-weight:600;font-size:20px;border-radius:0px 0px 0px 0px;" class=" button button-balanced  button-block " ui-sref="login">Submit</a>
+        <h1 class="title" style="color: white; margin-left: -100px;">Sign Up</h1>
+    </ion-header-bar>
+    </ion-header-bar>
+    <ion-content class="has-header fd-bg">
+        <div class="ft-24" style="color: white; text-align: center; margin-top: 100px;">
+            <b>Food Monger</b>
+        </div>
+        <!--         <div class="">
+            <img src="img/zypVioHTReBwH9gvE67c_watermelon4.png" width="40%" height="auto" style="display: block; margin-left: auto; margin-right: auto;">
+        </div> -->
+        <div class="ptl pll prl pbl">
+            <form id="signUp-form6" class="list ">
+                <label class="item item-input " id="signUp-input6">
+                    <span class="input-label">Username</span>
+                    <input type="text" placeholder="Enter here!" style="color: black; padding-right: 0px;">
+                </label>
+                <label class="item item-input " id="signUp-input8">
+                    <span class="input-label">Email</span>
+                    <input type="email" placeholder="Enter here!" style="color: black; padding-right: 0px;">
+                </label>
+                <label class="item item-input " id="signUp-input7">
+                    <span class="input-label">Password</span>
+                    <input type="password" placeholder="Enter here!" style="color: black; padding-right: 0px;">
+                </label>
+            </form>
+        </div>
+        <div class="prl pll">
+            <div style="color: white; background-color: #ff6f29; ">
+                <p class="ptm pbm ft-14" style="text-align: center;"><b>Submit</b></p>
+            </div>
+            <!-- <a href="tel:" id="login-button2" style="font-weight:600;font-size:10px;border-radius:0px 0px 0px 0px; color: white; background-color: #ff6f29; height: 15px;" class=" button button-block" on-tap="login()">Login</a> -->
+        </div>
+        <!-- <a href="tel:" id="signUp-button14" style="font-weight:600;font-size:20px;border-radius:0px 0px 0px 0px;" class=" button button-balanced  button-block " ui-sref="login">Submit</a> -->
     </ion-content>
 </ion-view>
