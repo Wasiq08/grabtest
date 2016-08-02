@@ -15,7 +15,7 @@ angular.module('CoreApi', ['CoreApiUtilities'])
 .constant('lagConfig', {
     appName: 'FoodMonger',
     appVersion: '1.0.0',
-    apiUrl: 'http://192.168.1.41:3000/'
+    apiUrl: 'http://192.168.1.33:3000/'
 
 })
 
@@ -30,6 +30,7 @@ angular.module('CoreApi', ['CoreApiUtilities'])
 .service('User', ['httpService', function(httpService) {
     this.login = function(param) {
         var config = httpService.Utils.getHeader();
+        console.log("in config", config)
         var url = httpService.Utils.buildUrl(new Array('login'));
         return httpService.$http.post(url, param, config);
     }

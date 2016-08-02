@@ -5,6 +5,9 @@ angular.module('app.controllers', [])
     $scope.users.user_email = 'ameerhamza810@gmail.com';
     $scope.users.password = 'autotek'
     $scope.login = function() {
+        localStorageService.set("auth_token", null);
+        localStorageService.set("loggedInUser", null);
+        console.log("in login")
         var params = {
             email: $scope.users.user_email,
             password: $scope.users.password
@@ -178,6 +181,14 @@ angular.module('app.controllers', [])
         user_name: 'Michael Evans'
     }]
 
+    Posts.getAllFeeds().success(function(res) {
+            console.log(res);
+            $scope.feeds = res.data;
+        })
+        .error(function(err) {
+
+        })
+
     $scope.getpicture = function() {
         var options = {
             quality: 80,
@@ -202,12 +213,6 @@ angular.module('app.controllers', [])
         });
     }
 
-    Posts.getAllFeeds().success(function(res) {
-        console.log(res);
-    })
-    .error(function(err) {
-
-    })
 })
 
 .controller('CreatePostCtrl', function($scope, appModalService, Posts, $rootScope, ImageService, $cordovaGeolocation) {
@@ -215,7 +220,7 @@ angular.module('app.controllers', [])
     $scope.final_obj = {};
     $scope.final_obj.location = {};
     $scope.final_obj.location.formatted_address = "Add Location";
-    var posOptions = { timeout: 10000, enableHighAccuracy: false };
+
 
     Posts.getCategories().success(function(res) {
             console.log(res);
@@ -229,34 +234,9 @@ angular.module('app.controllers', [])
     $scope.selectCategory.category_name = "Select Category";
 
     $scope.final_obj.category = "5799afbc88aed4ec19fdc652";
-    $scope.final_obj.price = 25;
-    $scope.final_obj.remark = "Awsome";
-    $cordovaGeolocation
-        .getCurrentPosition(posOptions)
-        .then(function(position) {
-            var lat = position.coords.latitude
-            var long = position.coords.longitude
-            console.log(lat);
-            console.log(long);
+    $scope.final_obj.price = 30;
+    $scope.final_obj.remark = "Awsome food at ghazi salahudding road";
 
-            var geocoder = new google.maps.Geocoder();
-            var latlng = new google.maps.LatLng(lat, long);
-
-            geocoder.geocode({ 'latLng': latlng }, function(results, status) {
-                if (status == google.maps.GeocoderStatus.OK) {
-                    if (results[1]) {
-                        $scope.final_obj.location = results[1];
-                        console.log(results[1].formatted_address); // details address
-                    } else {
-                        console.log('Location not found');
-                    }
-                } else {
-                    console.log('Geocoder failed due to: ' + status);
-                }
-            });
-        }, function(err) {
-            // error
-        });
 
 
 
@@ -274,14 +254,43 @@ angular.module('app.controllers', [])
     }
 
     $scope.selectLocation = function() {
-        appModalService.show('templates/location.html', 'LocationModalCtrl as vm', {}).then(function(res) {
-            console.log("location ", res);
-            // if (res != null) {
-            //     $scope.insertLocation = 1;
-            //     $scope.goal.location = res.location;
-            //     $scope.location = res.location.formatted_address;
-            // }
-        })
+        console.log("hello")
+            // appModalService.show('templates/location.html', 'LocationModalCtrl as vm', {}).then(function(res) {
+            //     console.log("location ", res);
+            //     $scope.final_obj.location = res.location;
+            //     // if (res != null) {
+            //     //     $scope.insertLocation = 1;
+            //     //     $scope.goal.location = res.location;
+            //     //     $scope.location = res.location.formatted_address;
+            //     // }
+            // })
+        var posOptions = { timeout: 10000, enableHighAccuracy: false };
+        $cordovaGeolocation
+            .getCurrentPosition(posOptions)
+            .then(function(position) {
+                var lat = 24.8752064
+                var long = 67.08795439999994
+                console.log(lat);
+                console.log(long);
+
+                var geocoder = new google.maps.Geocoder();
+                var latlng = new google.maps.LatLng(lat, long);
+
+                geocoder.geocode({ 'latLng': latlng }, function(results, status) {
+                    if (status == google.maps.GeocoderStatus.OK) {
+                        if (results[1]) {
+                            $scope.final_obj.location = results[1];
+                            console.log(results[1]); // details address
+                        } else {
+                            console.log('Location not found');
+                        }
+                    } else {
+                        console.log('Geocoder failed due to: ' + status);
+                    }
+                });
+            }, function(err) {
+                // error
+            });
     }
 
     $scope.creatPost = function() {
