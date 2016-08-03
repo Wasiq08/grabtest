@@ -1,0 +1,23 @@
+<ion-view>
+    <ion-content class="fd-bg">
+        <div class="ft-32" style="color: #ff6f29; text-align: center; margin-top: 50px;">
+            <b>Food Monger!</b>
+        </div>
+        <div class="ft-16" style="color: white; text-align: center;margin-top: 10px;">
+            <b>Upload Image</b>
+        </div>
+        <div style="position: relative;">
+            <div style="width: 80%; height: 200px; margin-top: 5%; background-color: #233a48; position: absolute; left:10%;">
+                <div style="width: 150px; height: 150px; margin-top: 25px; margin-left: 25px; ">
+                    <img ng-src="{{image.src}}" class="fd-img fd-img-br">
+                </div>
+                <div style="color: white; background-color: #ff6f29; " ng-click="next()">
+                    <p class="ptm pbm ft-14" style="text-align: center;"><b>Next</b></p>
+                </div>
+                <div style="color: white; background-color: #1f313d; margin-left: 180px; margin-top:-150px;" ng-click="addImage()">
+                    <p class="pts pbs ft-14" style="text-align: center;"><b>Upload</b></p>
+                </div>
+            </div>
+        </div>
+    </ion-content>
+</ion-view>

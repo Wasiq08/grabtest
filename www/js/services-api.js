@@ -15,7 +15,7 @@ angular.module('CoreApi', ['CoreApiUtilities'])
 .constant('lagConfig', {
     appName: 'FoodMonger',
     appVersion: '1.0.0',
-    apiUrl: 'http://192.168.1.33:3000/'
+    apiUrl: 'http://162.243.119.60:3000/'
 
 })
 
@@ -33,6 +33,29 @@ angular.module('CoreApi', ['CoreApiUtilities'])
         console.log("in config", config)
         var url = httpService.Utils.buildUrl(new Array('login'));
         return httpService.$http.post(url, param, config);
+    }
+
+    this.register = function(param) {
+        var url = httpService.Utils.buildUrl(new Array('register'));
+        return httpService.$http.post(url, param, {});
+    }
+
+    this.consumer_answers = function(params) {
+        var config = httpService.Utils.getHeader();
+        var url = httpService.Utils.buildUrl(new Array('consumer', 'answers'));
+        return httpService.$http.post(url, params, config);
+    }
+
+    this.updateprofile = function(params, uid) {
+        var config = httpService.Utils.getHeader();
+        var url = httpService.Utils.buildUrl(new Array('update', uid, 'profile'));
+        return httpService.$http.post(url, params, config);
+    }
+
+    this.getUser = function(id) {
+        var config = httpService.Utils.getHeader();
+        var url = httpService.Utils.buildUrl(new Array('consumer', id));
+        return httpService.$http.get(url, config);
     }
 }])
 
@@ -53,6 +76,12 @@ angular.module('CoreApi', ['CoreApiUtilities'])
         var config = httpService.Utils.getHeader();
         var url = httpService.Utils.buildUrl(new Array('feeds'));
         return httpService.$http.get(url, config);
+    }
+
+    this.postCategories = function(params) {
+        var config = httpService.Utils.getHeader();
+        var url = httpService.Utils.buildUrl(new Array('categories'));
+        return httpService.$http.post(url, params, config);
     }
 }])
 

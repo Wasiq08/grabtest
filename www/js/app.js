@@ -5,7 +5,9 @@
 // the 2nd parameter is an array of 'requires'
 // 'starter.services' is found in services.js
 // 'starter.controllers' is found in controllers.js
-angular.module('app', ['ionic', 'ngCordova', 'ngGeolocation','ion-place-tools', 'ionic.ui.modalService', 'ionic-modal-select', 'LocalStorageModule', 'ionic.contrib.ui.hscrollcards', 'app.controllers', 'app.routes', 'app.services', 'app.directives', 'CoreApi'])
+angular.module('app', ['ionic', 'ngCordova', 'ionic-datepicker', 'ngGeolocation','ion-place-tools', 'ionic.ui.modalService', 'ionic-modal-select', 'LocalStorageModule', 'ionic.contrib.ui.hscrollcards', 'app.controllers', 'app.routes', 'app.services', 'app.directives', 'CoreApi'])
+
+.constant('_', window._)
 
 .run(function($ionicPlatform) {
     $ionicPlatform.ready(function() {
@@ -49,4 +51,6 @@ angular.module('app', ['ionic', 'ngCordova', 'ngGeolocation','ion-place-tools', 
 
         return userLocation;
     }
+
+    $rootScope._ = window._;
 })

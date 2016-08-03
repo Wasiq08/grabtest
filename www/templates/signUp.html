@@ -16,20 +16,29 @@
         <div class="ptl pll prl pbl">
             <form id="signUp-form6" class="list ">
                 <label class="item item-input " id="signUp-input6">
-                    <span class="input-label">Username</span>
-                    <input type="text" placeholder="Enter here!" style="color: black; padding-right: 0px;">
+                    <span class="input-label">Name</span>
+                    <input type="text" placeholder="Enter here!" style="color: black; padding-right: 0px;" ng-model="user.name">
                 </label>
                 <label class="item item-input " id="signUp-input8">
                     <span class="input-label">Email</span>
-                    <input type="email" placeholder="Enter here!" style="color: black; padding-right: 0px;">
+                    <input type="email" placeholder="Enter here!" style="color: black; padding-right: 0px;" ng-model="user.email">
                 </label>
                 <label class="item item-input " id="signUp-input7">
                     <span class="input-label">Password</span>
-                    <input type="password" placeholder="Enter here!" style="color: black; padding-right: 0px;">
+                    <input type="password" placeholder="Enter here!" style="color: black; padding-right: 0px;" ng-model="user.password">
+                </label>
+                <label class="item item-input " id="signUp-input7">
+                    <span class="input-label">Mobile No:</span>
+                    <input type="number" placeholder="Enter here!" style="color: black; padding-right: 0px;" ng-model="user.mobile_no">
+                </label>
+                <label class="item item-input " id="signUp-input7">
+                    <span class="input-label">D.O.B</span>
+                    <span ng-click="openDatePicker()" on-tap="openDatePicker()"> {{user.date_of_birth}} </span>
+                    <!--  <input type="password" placeholder="Enter here!" style="color: black; padding-right: 0px;"> -->
                 </label>
             </form>
         </div>
-        <div class="prl pll">
+        <div class="prl pll" ng-click="submit()">
             <div style="color: white; background-color: #ff6f29; ">
                 <p class="ptm pbm ft-14" style="text-align: center;"><b>Submit</b></p>
             </div>

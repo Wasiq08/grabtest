@@ -10,7 +10,8 @@ angular.module('app.routes', [])
         .state('sidemenu', {
             url: '/sidemenu',
             templateUrl: 'templates/sidemenu.html',
-            abstract: true
+            abstract: true,
+            controller: 'SideMenuCtrl'
         })
 
     .state('sidemenu.dashboard', {
@@ -76,6 +77,12 @@ angular.module('app.routes', [])
         controller: 'signUpCtrl'
     })
 
+    .state('uploadimage', {
+        url: '/uploadimage',
+        templateUrl: 'templates/upload-image.html',
+        controller: 'UploadImageCtrl'
+    })
+
     .state('welcome', {
         url: '/welcome',
         templateUrl: 'templates/welcome.html',
@@ -97,13 +104,13 @@ angular.module('app.routes', [])
     .state('process2', {
         url: '/process2',
         templateUrl: 'templates/process2.html',
-        controller: 'process2Ctrl'
+        controller: 'process1Ctrl'
     })
 
     .state('process3', {
         url: '/process3',
         templateUrl: 'templates/process3.html',
-        controller: 'process3Ctrl'
+        controller: 'process1Ctrl'
     })
 
 

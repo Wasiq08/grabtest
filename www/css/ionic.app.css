@@ -10752,9 +10752,10 @@ a.dark {
   /*background-color: #292241;*/
   background-color: rgba(39, 62, 84, 0.82); }
 
-.fd-img {
-  background-image: url("/img/bg.jpg"); }
-
+/* .fd-img {
+    background-image: url('/img/bg.jpg');
+}
+ */
 .ft-10 {
   font-size: 10px; }
 

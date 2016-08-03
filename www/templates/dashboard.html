@@ -18,7 +18,7 @@
                 <b>{{x.user.name}}</b>
             </div>
             <div style="width: 100%; height: 200px;">
-                <img ng-src="{{x.src}}" class="fd-img">
+                <img ng-src="{{x.user.src}}" class="fd-img">
             </div>
             <div class="pll prm pts pbm">
                 <a ui-sref="sidemenu.foodprofile"><p class="ft-18 ptx"><b>{{x.feed.remark}}</b></p></a> 
@@ -66,7 +66,7 @@
                 <i class="icon ion-home"></i><span class="tab-title ng-binding" ng-bind-html="title"></span>
             </a>
             <a ng-click="getpicture()" nav-clear class="tab-item disable-user-behavior" title="Chat" icon-on="ion-ios7-filing" icon-off="ion-ios7-filing-outline" ui-sref="snd.chat">
-                <i class="icon ion-chatbubbles"></i><span class="tab-title ng-binding" ng-bind-html="title"></span>
+                <i class="ion-camera ft-24"></i><span class="tab-title ng-binding" ng-bind-html="title"></span>
             </a>
             <a nav-clear class="tab-item disable-user-behavior" title="Drink" icon-on="ion-ios7-filing" icon-off="ion-ios7-filing-outline" ui-sref="snd.drink">
                 <i class="icon ion-wineglass"></i><span class="tab-title ng-binding" ng-bind-html="title"></span>
