@@ -16,6 +16,7 @@ angular.module('CoreApi', ['CoreApiUtilities'])
     appName: 'FoodMonger',
     appVersion: '1.0.0',
     apiUrl: 'http://162.243.119.60:3000/'
+    // apiUrl: 'http://192.168.1.38:30001/'
 
 })
 

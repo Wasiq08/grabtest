@@ -8,10 +8,10 @@
     <ion-side-menu side="left">
         <ion-content class="fd-bg">
             <div class="profile-sidemenu">
-                <img src="img/John_Doe.jpg" class="fd-img fd-img-br">
+                <img ng-src="{{$root.user.profile[0].medium}}" class="fd-img fd-img-br">
             </div>
             <div class="fd-m-align ptl ft-18" style="color: white;">
-                {{user[0].name}}
+                {{$root.user.name}}
             </div>
             <div class="fd-m-align ptl ft-18" style="color: white;">
                 151 <b>Likes</b> across 121 <b>Posts</b>

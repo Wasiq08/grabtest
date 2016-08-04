@@ -1,6 +1,6 @@
 angular.module('app.controllers', [])
 
-.controller('loginCtrl', function($scope, User, $ionicPopup, $ionicLoading, $state, localStorageService) {
+.controller('loginCtrl', function($scope, User, $ionicPopup, $ionicLoading, $state, localStorageService, $rootScope) {
     $scope.users = {};
     $scope.users.user_email = 'ameerhamza810@gmail.com';
     $scope.users.password = '123'
@@ -28,9 +28,20 @@ angular.module('app.controllers', [])
                 console.log(res)
                 if (res.meta.status == 200) {
                     localStorageService.set("auth_token", res.data.auth.token);
-                    localStorageService.set("loggedInUser", res.data.auth.user);
-                    $state.go('welcome')
-                    $scope.hide();
+                    var id = res.data.auth.user[0]._id;
+                    User.getUser(id)
+                        .success(function(user) {
+                            console.log(user)
+                            localStorageService.set("loggedInUser", user.data);
+                            $rootScope.user = localStorageService.get("loggedInUser")
+                            console.log($scope.user)
+                            $state.go('welcome')
+                            $scope.hide();
+                        })
+                        .error(function(err) {
+
+                        })
+
                 }
 
             })
@@ -56,8 +67,9 @@ angular.module('app.controllers', [])
 
 })
 
-.controller('SideMenuCtrl', function($scope, localStorageService) {
-    $scope.user = localStorageService.get("loggedInUser")
+.controller('SideMenuCtrl', function($scope, $rootScope, localStorageService) {
+    $rootScope.user = localStorageService.get("loggedInUser")
+    console.log($scope.user)
 
 })
 
@@ -121,7 +133,9 @@ angular.module('app.controllers', [])
                             console.log(res)
                             if (res.meta.status == 200) {
                                 localStorageService.set("auth_token", res.meta.data.auth.token);
-                                localStorageService.set("loggedInUser", res.meta.data.auth.user);
+                                localStorageService.set("loggedInUser", res.meta.data.auth.user[0]);
+                                $rootScope.user = localStorageService.get("loggedInUser")
+                                console.log($scope.user)
                                 $state.go('uploadimage')
                                 $scope.hide();
                             }
@@ -167,7 +181,7 @@ angular.module('app.controllers', [])
 
 })
 
-.controller('UploadImageCtrl', function($scope, User, $ionicLoading, $state, httpService, $cordovaFileTransfer, localStorageService, $cordovaCamera, $ionicActionSheet) {
+.controller('UploadImageCtrl', function($scope, User, $ionicLoading, $state, httpService, $cordovaFileTransfer, localStorageService, $cordovaCamera, $ionicActionSheet, $rootScope) {
     $scope.image = {}
     $scope.image.src = "img/user.png";
 
@@ -236,15 +250,10 @@ angular.module('app.controllers', [])
                                 User.updateprofile(user_params, profile_id)
                                     .success(function(response) {
                                         console.log(response)
+                                        localStorageService.set("loggedInUser", response.data)
+                                        $rootScope.user = localStorageService.get("loggedInUser")
+                                        console.log($scope.user)
                                         $scope.hide();
-                                        User.getUser(profile_id)
-                                            .success(function(res) {
-                                                console.log(res)
-                                                    //localStorageService.get("loggedInUser") = []
-                                            })
-                                            .error(function(err) {
-
-                                            })
                                     })
                                     .error(function(err) {
                                         $scope.hide();
@@ -518,7 +527,7 @@ angular.module('app.controllers', [])
 
 .controller('dashboardCtrl', function($rootScope, $ionicLoading, localStorageService, $scope, Posts, $cordovaFileTransfer, $cordovaCamera, $state) {
     console.log("in dashboard ctrl");
-    
+
     $scope.feeds = [{
         user: {
             src: 'img/waffle.jpg',
@@ -534,7 +543,10 @@ angular.module('app.controllers', [])
             location: {
                 formatted_address: "Bar b q tonight, Karachi Pakistan"
             },
-            price : 20
+            price: 20,
+            media: [{
+                medium: 'img/waffle.jpg'
+            }]
         }
     }, {
         user: {
@@ -551,7 +563,10 @@ angular.module('app.controllers', [])
             location: {
                 formatted_address: "KababJees, Karachi Pakistan"
             },
-            price : 20
+            price: 20,
+            media: [{
+                medium: 'img/hotchocolate.jpg'
+            }]
         }
 
     }, {
@@ -569,7 +584,10 @@ angular.module('app.controllers', [])
             location: {
                 formatted_address: "Burger Lab, Karachi Pakistan"
             },
-            price : 20
+            price: 20,
+            media: [{
+                medium: 'img/dessert.jpg'
+            }]
         }
 
     }]
@@ -633,7 +651,8 @@ angular.module('app.controllers', [])
                     // Success!
                 }, function(err) {
                     console.log(err)
-                        // Error
+                    $scope.hide();
+                    // Error
                 }, function(progress) {
                     // constant progress updates
                 });
@@ -652,8 +671,12 @@ angular.module('app.controllers', [])
 .controller('CreatePostCtrl', function($scope, localStorageService, appModalService, Posts, $rootScope, ImageService, $cordovaGeolocation, $ionicHistory, $state) {
     $scope.imgobj = ImageService.getImage();
     $scope.final_obj = {};
-    $scope.final_obj.location = {};
-    $scope.final_obj.location.formatted_address = "Add Location";
+    //$scope.final_obj.location = {"lon":51.12076493195686,"lat":-113.98040771484375};
+    $scope.final_obj.location = [51.12076493195686, -113.98040771484375];
+
+    $scope.final_obj.loc_name = "Nick's Nissans";
+    $scope.final_obj.affiliation = "Nissan";
+    //$scope.final_obj.location.formatted_address = "Add Location";
     $scope.final_obj.post_image_id = localStorageService.get("file_id")
 
     Posts.getCategories().success(function(res) {
