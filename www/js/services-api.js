@@ -16,7 +16,7 @@ angular.module('CoreApi', ['CoreApiUtilities'])
     appName: 'FoodMonger',
     appVersion: '1.0.0',
     apiUrl: 'http://162.243.119.60:3000/'
-    // apiUrl: 'http://192.168.1.38:30001/'
+        // apiUrl: 'http://192.168.1.38:30001/'
 
 })
 
@@ -73,15 +73,21 @@ angular.module('CoreApi', ['CoreApiUtilities'])
         return httpService.$http.post(url, params, config);
     }
 
-    this.getAllFeeds = function() {
+    this.getAllFeeds = function(urlParams) {
         var config = httpService.Utils.getHeader();
-        var url = httpService.Utils.buildUrl(new Array('feeds'));
+        var url = httpService.Utils.buildUrl(new Array('feeds'), urlParams);
         return httpService.$http.get(url, config);
     }
 
     this.postCategories = function(params) {
         var config = httpService.Utils.getHeader();
         var url = httpService.Utils.buildUrl(new Array('categories'));
+        return httpService.$http.post(url, params, config);
+    }
+
+    this.addLike = function(postid) {
+        var config = httpService.Utils.getHeader();
+        var url = httpService.Utils.buildUrl(new Array('posts', postid,'like'));
         return httpService.$http.post(url, params, config);
     }
 }])

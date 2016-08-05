@@ -25,23 +25,12 @@ angular.module('app.controllers', [])
         };
         $scope.show();
         User.login(params).success(function(res) {
-                console.log(res)
                 if (res.meta.status == 200) {
                     localStorageService.set("auth_token", res.data.auth.token);
-                    var id = res.data.auth.user[0]._id;
-                    User.getUser(id)
-                        .success(function(user) {
-                            console.log(user)
-                            localStorageService.set("loggedInUser", user.data);
-                            $rootScope.user = localStorageService.get("loggedInUser")
-                            console.log($scope.user)
-                            $state.go('welcome')
-                            $scope.hide();
-                        })
-                        .error(function(err) {
-
-                        })
-
+                    localStorageService.set("loggedInUser", res.data.auth.user);
+                    $rootScope.user = localStorageService.get("loggedInUser");
+                    $scope.hide();
+                    $state.go('welcome')
                 }
 
             })
@@ -133,7 +122,7 @@ angular.module('app.controllers', [])
                             console.log(res)
                             if (res.meta.status == 200) {
                                 localStorageService.set("auth_token", res.meta.data.auth.token);
-                                localStorageService.set("loggedInUser", res.meta.data.auth.user[0]);
+                                localStorageService.set("loggedInUser", res.meta.data.auth.user);
                                 $rootScope.user = localStorageService.get("loggedInUser")
                                 console.log($scope.user)
                                 $state.go('uploadimage')
@@ -198,6 +187,8 @@ angular.module('app.controllers', [])
     $scope.hide = function() {
         $ionicLoading.hide()
     };
+
+    $scope.isLoading = false;
     $scope.addImage = function() {
         var options = {
             maximumImagesCount: 25,
@@ -207,7 +198,7 @@ angular.module('app.controllers', [])
         };
         var actionSheet = $ionicActionSheet.show({
             titleText: 'Actions',
-            buttons: [{ text: '<i class="icon lg-icon-gallery"></i> Gallery' }, { text: '<i class="icon lg-icon-camera"></i> Camera' }],
+            buttons: [{ text: '<i class="icon lg-icon-gallery"></i> Gallery' }],
             //destructiveText: 'Delete',
             cancelText: '<i class="icon rd-txt lg-icon-cross-small"></i> <span class="rd-txt">Close</span>',
             cancel: function() {},
@@ -235,14 +226,15 @@ angular.module('app.controllers', [])
                                 'x-access-token': localStorageService.get("auth_token")
                             }
                         };
-                        $scope.show();
+                        //$scope.show();
+                        $scope.isLoading = true;
                         $cordovaFileTransfer.upload('http://162.243.119.60:3000/upload/image?imageof=profile', imageData, options)
                             .then(function(res) {
                                 console.log(JSON.stringify(localStorageService.get("loggedInUser")))
                                 console.log("success", JSON.parse(res.response))
                                 $scope.finalImage = JSON.parse(res.response);
                                 $scope.image.src = $scope.finalImage.data.file[0].medium;
-                                var profile_id = localStorageService.get("loggedInUser")[0]._id;
+                                var profile_id = localStorageService.get("loggedInUser")._id;
                                 var user_params = {
                                     profile_image_id: $scope.finalImage.data.fileId
                                 };
@@ -253,10 +245,12 @@ angular.module('app.controllers', [])
                                         localStorageService.set("loggedInUser", response.data)
                                         $rootScope.user = localStorageService.get("loggedInUser")
                                         console.log($scope.user)
-                                        $scope.hide();
+                                        $scope.isLoading = false;
+                                        //$scope.hide();
                                     })
                                     .error(function(err) {
-                                        $scope.hide();
+                                        //$scope.hide();
+                                        $scope.isLoading = false;
 
                                     })
 
@@ -264,8 +258,10 @@ angular.module('app.controllers', [])
                                 // Success!
                             }, function(err) {
                                 console.log(err)
+                                $scope.isLoading = false;
                                     // Error
                             }, function(progress) {
+                                console.log("progress",progress)
                                 // constant progress updates
                             });
                         //$rootScope.imageData = "data:image/jpeg;base64," + imageData;
@@ -275,6 +271,7 @@ angular.module('app.controllers', [])
 
                     }, function(err) {
                         // error
+                        $scope.isLoading = false;
                     });
                 }
                 if (index == 1) {
@@ -525,96 +522,118 @@ angular.module('app.controllers', [])
     }
 })
 
-.controller('dashboardCtrl', function($rootScope, $ionicLoading, localStorageService, $scope, Posts, $cordovaFileTransfer, $cordovaCamera, $state) {
+.controller('dashboardCtrl', function($rootScope, ImageService, $ionicLoading, localStorageService, $scope, Posts, $cordovaFileTransfer, $cordovaCamera, $state) {
     console.log("in dashboard ctrl");
 
-    $scope.feeds = [{
-        user: {
-            src: 'img/waffle.jpg',
-            name: 'Awsome Waffle! The hot Chocolate Like Dream!',
-            price: '$ 11.24',
-            media: [{
-                small: 'img/John_Doe.jpg'
-            }],
-            user_src: 'img/John_Doe.jpg',
-            name: 'John Doe'
-        },
-        feed: {
-            location: {
-                formatted_address: "Bar b q tonight, Karachi Pakistan"
-            },
-            price: 20,
-            media: [{
-                medium: 'img/waffle.jpg'
-            }]
-        }
-    }, {
-        user: {
-            src: 'img/hotchocolate.jpg',
-            name: 'The hot Chocolate Like Dream! The hot Chocolate Like Dream! ',
-            price: '$ 32.86',
-            media: [{
-                small: 'img/maria.jpg'
-            }],
-            user_src: 'img/maria.jpg',
-            name: 'Ana Maria'
-        },
-        feed: {
-            location: {
-                formatted_address: "KababJees, Karachi Pakistan"
-            },
-            price: 20,
-            media: [{
-                medium: 'img/hotchocolate.jpg'
-            }]
-        }
+    // $scope.feeds = [{
+    //     user: {
+    //         src: 'img/waffle.jpg',
+    //         name: 'Awsome Waffle! The hot Chocolate Like Dream!',
+    //         price: '$ 11.24',
+    //         media: [{
+    //             small: 'img/John_Doe.jpg'
+    //         }],
+    //         user_src: 'img/John_Doe.jpg',
+    //         name: 'John Doe'
+    //     },
+    //     feed: {
+    //         location: {
+    //             formatted_address: "Bar b q tonight, Karachi Pakistan"
+    //         },
+    //         price: 20,
+    //         media: [{
+    //             medium: 'img/waffle.jpg'
+    //         }]
+    //     }
+    // }, {
+    //     user: {
+    //         src: 'img/hotchocolate.jpg',
+    //         name: 'The hot Chocolate Like Dream! The hot Chocolate Like Dream! ',
+    //         price: '$ 32.86',
+    //         media: [{
+    //             small: 'img/maria.jpg'
+    //         }],
+    //         user_src: 'img/maria.jpg',
+    //         name: 'Ana Maria'
+    //     },
+    //     feed: {
+    //         location: {
+    //             formatted_address: "KababJees, Karachi Pakistan"
+    //         },
+    //         price: 20,
+    //         media: [{
+    //             medium: 'img/hotchocolate.jpg'
+    //         }]
+    //     }
 
-    }, {
-        user: {
-            src: 'img/dessert.jpg',
-            name: 'Awsome Dessert!',
-            price: '$ 20.00',
-            media: [{
-                small: 'img/evans.jpeg'
-            }],
-            user_src: 'img/evans.jpeg',
-            name: 'Michael Evans'
-        },
-        feed: {
-            location: {
-                formatted_address: "Burger Lab, Karachi Pakistan"
-            },
-            price: 20,
-            media: [{
-                medium: 'img/dessert.jpg'
-            }]
-        }
+    // }, {
+    //     user: {
+    //         src: 'img/dessert.jpg',
+    //         name: 'Awsome Dessert!',
+    //         price: '$ 20.00',
+    //         media: [{
+    //             small: 'img/evans.jpeg'
+    //         }],
+    //         user_src: 'img/evans.jpeg',
+    //         name: 'Michael Evans'
+    //     },
+    //     feed: {
+    //         location: {
+    //             formatted_address: "Burger Lab, Karachi Pakistan"
+    //         },
+    //         price: 20,
+    //         media: [{
+    //             medium: 'img/dessert.jpg'
+    //         }]
+    //     }
 
-    }]
+    // }]
 
     $rootScope.imageData = "img/dessert.jpg";
 
-    //$scope.feeds = []
+    $scope.feeds = []
+    var page = offset = 0;
+    var limit = 5;
 
-    Posts.getAllFeeds().success(function(res) {
-            console.log(res);
-            for (var i = 0; i < res.data.length; i++) {
-                $scope.feeds.push(res.data[i]);
-            }
-            //$scope.feeds = res.data;
-        })
-        .error(function(err) {
+    $scope.noMoreFeedContent = true;
+    $scope.getDashboardFeed = function(start) {
+        var _start = start || false
+        $scope.noMoreFeedContent = true;
+        Posts.getAllFeeds({ offset: offset, limit: limit }).success(function(res) {
+                console.log(res);
+                $scope.isLoading = false;
+                if (_start) {
+                    $scope.feeds = [];
+                }
+                for (var i = 0; i < res.data.length; i++) {
+                    $scope.feeds.push(res.data[i]);
+                }
+                if (res.data.length < limit) {
+                    $scope.noMoreFeedContent = false;
+                }
 
-        })
+                offset = offset + limit;
+                if (_start) {
+                    $scope.$broadcast('scroll.refreshComplete');
+                    //$scope.$apply()
+                } else {
+                    $scope.$broadcast('scroll.infiniteScrollComplete');
+                }
+                //$scope.feeds = res.data;
+            })
+            .error(function(err) {
 
-    $scope.show = function() {
-        $ionicLoading.show({
-            template: 'Loading...'
-        })
+            })
     };
-    $scope.hide = function() {
-        $ionicLoading.hide()
-    };
+
+    $scope.doRefresh = function() {
+        offset = 0;
+        $scope.getDashboardFeed(true);
+    }
+
+    $rootScope.$on('POST_CREATED', function(event, args) {
+        $scope.feeds.unshift(args.post)
+    })
 
     $scope.getpicture = function() {
         var options = {
@@ -638,7 +657,7 @@ angular.module('app.controllers', [])
                     'x-access-token': localStorageService.get("auth_token")
                 }
             };
-            $scope.show();
+            //$scope.show();
             $cordovaFileTransfer.upload('http://162.243.119.60:3000/upload/image?imageof=post', imageData, options)
                 .then(function(res) {
                     console.log(JSON.stringify(localStorageService.get("auth_token")))
@@ -646,13 +665,17 @@ angular.module('app.controllers', [])
                     $scope.finalImage = JSON.parse(res.response);
                     $rootScope.imageData = $scope.finalImage.data.file[0].medium;
                     localStorageService.set("file_id", $scope.finalImage.data.fileId)
-                    $state.go('sidemenu.imagefilter');
-                    $scope.hide();
+                    ImageService.setImage({
+                        image: $rootScope.imageData,
+                        class: ''
+                    })
+                    $state.go('sidemenu.createpost');
+                    //$scope.hide();
                     // Success!
                 }, function(err) {
                     console.log(err)
-                    $scope.hide();
-                    // Error
+                        //$scope.hide();
+                        // Error
                 }, function(progress) {
                     // constant progress updates
                 });
@@ -672,11 +695,11 @@ angular.module('app.controllers', [])
     $scope.imgobj = ImageService.getImage();
     $scope.final_obj = {};
     //$scope.final_obj.location = {"lon":51.12076493195686,"lat":-113.98040771484375};
-    $scope.final_obj.location = [51.12076493195686, -113.98040771484375];
 
-    $scope.final_obj.loc_name = "Nick's Nissans";
+
+
     $scope.final_obj.affiliation = "Nissan";
-    //$scope.final_obj.location.formatted_address = "Add Location";
+    $scope.final_obj.loc_name = "Add Location";
     $scope.final_obj.post_image_id = localStorageService.get("file_id")
 
     Posts.getCategories().success(function(res) {
@@ -705,45 +728,32 @@ angular.module('app.controllers', [])
     }
 
     $scope.selectCategoryOption = function() {
+        console.log("hello")
         appModalService.show('templates/add-interest.html', 'CategoriesModalCtrl as vm', {}).then(function(res) {
             console.log(res)
+            if (res != null) {
+                $scope.insertTags = 1;
+                $scope.final_obj.tag = res.hashtags;
+                $scope.hashtags = res.hashtags;
+                //CreateGoalDataService.setTags(res.hashtags);
+            }
         })
     }
 
     $scope.selectLocation = function() {
         console.log("hello")
 
-        // var posOptions = { timeout: 10000, enableHighAccuracy: false };
-        // $cordovaGeolocation
-        //     .getCurrentPosition(posOptions)
-        //     .then(function(position) {
-        //         var lat = 24.878511
-        //         var long = 67.065936
-        //         console.log(lat);
-        //         console.log(long);
-
-        //         var geocoder = new google.maps.Geocoder();
-        //         var latlng = new google.maps.LatLng(lat, long);
-
-        //         geocoder.geocode({ 'latLng': latlng }, function(results, status) {
-        //             if (status == google.maps.GeocoderStatus.OK) {
-        //                 if (results[1]) {
-        //                     $scope.final_obj.location = results[1];
-        //                     console.log(results[1]); // details address
-        //                 } else {
-        //                     console.log('Location not found');
-        //                 }
-        //             } else {
-        //                 console.log('Geocoder failed due to: ' + status);
-        //             }
-        //         });
-        //     }, function(err) {
-        //         // error
-        //     });
-
         appModalService.show('templates/location.html', 'LocationModalCtrl as vm', {}).then(function(res) {
             console.log("location ", res.location);
-            $scope.final_obj.location = res.location;
+            if (res != null) {
+                var lat = res.location.geometry.location.lat();
+                var lng = res.location.geometry.location.lng()
+                var arr = [];
+                arr[0] = lat;
+                arr[1] = lng;
+                $scope.final_obj.location = arr;
+                $scope.final_obj.loc_name = res.location.formatted_address;
+            }
             // if (res != null) {
             //     $scope.insertLocation = 1;
             //     $scope.goal.location = res.location;
@@ -754,13 +764,14 @@ angular.module('app.controllers', [])
 
     $scope.creatPost = function() {
         console.log($scope.final_obj)
-        $scope.final_obj.category = $scope.selectCategory._id;
+        console.log($scope.selectCategory)
+        $scope.final_obj.category = $scope.selectCategory.category_name;
         Posts.create($scope.final_obj).success(function(result) {
                 console.log(result);
                 $ionicHistory.nextViewOptions({
                     disableBack: true
                 });
-
+                //$rootScope.$broadcast('POST_CREATED', {post: result.data});
                 $state.go('sidemenu.dashboard');
             })
             .error(function(err) {
@@ -771,18 +782,19 @@ angular.module('app.controllers', [])
 
 })
 
-.controller('LocationModalCtrl', ['$scope', '$q', function($scope, $q) {
+.controller('LocationModalCtrl', ['$scope', '$q', '$cordovaGeolocation', function($scope, $q, $cordovaGeolocation) {
     var vm = this;
     $scope.gPlace;
+    $scope.data = {};
 
     $scope.locationChanged = function(location) {
-
+        console.log(location)
         var geocoder = new google.maps.Geocoder();
         geocoder.geocode({
             address: location
         }, function(results, status) {
             if (status == google.maps.GeocoderStatus.OK) {
-                console.log("status", results)
+                console.log("status", results[0].geometry.location.lat())
                 vm.location = results[0];
                 $q.resolve(results);
             } else {
@@ -798,6 +810,46 @@ angular.module('app.controllers', [])
     vm.cancel = function() {
         $scope.closeModal(null);
     };
+
+    $scope.selectLocation = function() {
+        console.log("hello")
+            //$scope.final_obj.location = [24.883040, 67.066413];
+        var posOptions = { timeout: 10000, enableHighAccuracy: false };
+        $cordovaGeolocation
+            .getCurrentPosition(posOptions)
+            .then(function(position) {
+
+                console.log("position is", position);
+                //24.876852, 67.062625
+                var lat = position.coords.latitude;
+                var long = position.coords.longitude;
+                console.log(lat);
+                console.log(long);
+
+                var geocoder = new google.maps.Geocoder();
+                var latlng = new google.maps.LatLng(lat, long);
+
+                geocoder.geocode({ 'latLng': latlng }, function(results, status) {
+                    if (status == google.maps.GeocoderStatus.OK) {
+                        if (results[1]) {
+                            //$scope.final_obj.location = results[1];
+                            console.log(results[1]); // details address
+                            $scope.data.address = results[1].formatted_address;
+                            $scope.locationChanged(results[1].formatted_address)
+                        } else {
+                            console.log('Location not found');
+                        }
+                    } else {
+                        console.log('Geocoder failed due to: ' + status);
+                    }
+                });
+            }, function(err) {
+                // error
+            });
+
+    }
+
+
 }])
 
 .controller('CategoriesModalCtrl', ['$scope', function($scope) {
@@ -808,19 +860,8 @@ angular.module('app.controllers', [])
     $scope.featTagsClass = [];
 
     $scope.hashtags = []
-        //console.log(CreateGoalDataService.getTags())
-
-    //$scope.hashtags = CreateGoalDataService.getTags();
-    //vm.hashtags = CreateGoalDataService.getTags();
 
     $scope.isLoading = true;
-    // ExploreServices.featuredTags().success(function(res) {
-    //     $scope.featTags = res.data;
-    //     $scope.isLoading = false;
-    //     for (var i = 0; i < res.data.length; i++) {
-    //         $scope.featTagsClass[i] = '';
-    //     }
-    // })
 
     var addHashTag = function(currentVal) {
         currentVal = currentVal.replace(/(\s+)/ig, ' ');
@@ -836,12 +877,12 @@ angular.module('app.controllers', [])
     $scope.selectFeatureTag = function(index, tag) {
         if ($scope.featTagsClass[index] == '') {
             $scope.featTagsClass[index] = 'active';
-            vm.hashtags.push("#" + tag.tagname);
-            $scope.hashtags.push("#" + tag.tagname);
+            vm.hashtags.push("#" + tag);
+            $scope.hashtags.push("#" + tag);
         } else {
             $scope.featTagsClass[index] = '';
 
-            var tagname = "#" + tag.tagname;
+            var tagname = "#" + tag;
             for (var i = 0; i < $scope.hashtags.length; i++) {
                 if ($scope.hashtags[i] == tagname) {
                     $scope.hashtags.splice(i, 1);

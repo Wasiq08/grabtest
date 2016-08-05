@@ -9874,8 +9874,8 @@ ion-slides {
 }
 
 .spinner.spinner-stable {
-    stroke: #f8f8f8;
-    fill: #f8f8f8;
+    stroke: #fff;
+    fill: #fff;
 }
 
 .spinner.spinner-positive {
@@ -9919,7 +9919,7 @@ ion-slides {
 
 .spinner-ios,
 .spinner-ios-small {
-    stroke: #69717d;
+    stroke: #fff;
 }
 
 .spinner-spiral .stop1 {
@@ -11832,7 +11832,7 @@ progress {
     border-color: transparent;
     background: none;
     box-shadow: none;
-    color: #b2b2b2;
+    color: white;
 }
 
 .button-clear.button-icon {
@@ -13037,10 +13037,12 @@ a.dark {
     background-color: rgba(39, 62, 84, 0.82);
 }
 
+
 /* .fd-img {
     background-image: url('/img/bg.jpg');
 }
  */
+
 .ft-10 {
     font-size: 10px;
 }
@@ -13369,15 +13371,78 @@ div.hscroller {
     color: black;
 }
 
+.hash-tag {
+    color: rgba(39, 62, 84, 0.82);
+    border: 1px solid rgba(39, 62, 84, 0.82);
+    border-radius: 12px;
+    padding: 1px 8px;
+    margin-right: 10px;
+    display: inline-block;
+    margin-bottom: 10px;
+    max-width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
 .add-interest .hash-tag {
-  color: rgba(39, 62, 84, 0.82);
-  border: 1px solid rgba(39, 62, 84, 0.82);
-  border-radius: 12px;
-  padding: 1px 8px;
-  margin: 5px 10px 5px 0;
-  display: inline-block;
-  max-width: 140px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis; }
+    color: rgba(39, 62, 84, 0.82);
+    border: 1px solid rgba(39, 62, 84, 0.82);
+    border-radius: 12px;
+    padding: 1px 8px;
+    margin: 5px 10px 5px 0;
+    display: inline-block;
+    max-width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.fd-chips {
+    color: rgba(39, 62, 84, 0.82);
+    border: 1px solid rgba(39, 62, 84, 0.82);
+    border-radius: 12px;
+    padding: 1px 8px;
+    margin: 5px 10px 5px 0;
+    display: inline-block;
+    max-width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    font-size: 14px;
+    text-overflow: ellipsis;
+}
+
+.fd-chips.active {
+    color: rgba(39, 62, 84, 0.82);
+    border: 1px solid rgba(39, 62, 84, 0.82);
+}
+
+.loader {
+    border: 5px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 5px solid #3498db;
+    width: 50px;
+    height: 50px;
+    -webkit-animation: spin 2s linear infinite;
+    animation: spin 2s linear infinite;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@-webkit-keyframes spin {
+    0% {
+        -webkit-transform: rotate(0deg);
+    }
+    100% {
+        -webkit-transform: rotate(360deg);
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}

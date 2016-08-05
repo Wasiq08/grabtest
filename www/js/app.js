@@ -5,7 +5,7 @@
 // the 2nd parameter is an array of 'requires'
 // 'starter.services' is found in services.js
 // 'starter.controllers' is found in controllers.js
-angular.module('app', ['ionic', 'ngCordova', 'ionic-datepicker', 'ngGeolocation','ion-place-tools', 'ionic.ui.modalService', 'ionic-modal-select', 'LocalStorageModule', 'ionic.contrib.ui.hscrollcards', 'app.controllers', 'app.routes', 'app.services', 'app.directives', 'CoreApi'])
+angular.module('app', ['ionic', 'ngCordova', 'ionic-datepicker', 'ngGeolocation', 'ion-place-tools', 'ionic.ui.modalService', 'ionic-modal-select', 'LocalStorageModule', 'ionic.contrib.ui.hscrollcards', 'app.controllers', 'app.routes', 'app.services', 'app.directives', 'CoreApi'])
 
 .constant('_', window._)
 
@@ -24,7 +24,7 @@ angular.module('app', ['ionic', 'ngCordova', 'ionic-datepicker', 'ngGeolocation'
     });
 })
 
-.run(function($rootScope, $state) {
+.run(function($rootScope, $state, localStorageService) {
 
     $rootScope.navigateState = function(state) {
         console.log("state is", state)
@@ -53,4 +53,10 @@ angular.module('app', ['ionic', 'ngCordova', 'ionic-datepicker', 'ngGeolocation'
     }
 
     $rootScope._ = window._;
+
+    $rootScope.logout = function() {
+        localStorageService.set("auth_token", null);
+        localStorageService.set("loggedInUser", null);
+        $state.go('login')
+    }
 })

@@ -10,10 +10,10 @@
         </div>
     </ion-nav-buttons>
     <ion-content>
-        <div class="pbl" style="width: 100%; height: 240px;" ng-class="imgobj.class">
+        <div style="width: 100%; height: 240px;" ng-class="imgobj.class">
             <img ng-src="{{imgobj.image}}" class="fd-img">
         </div>
-        <div style="width: 90%; height: 100px; position: relative; border-bottom-style: solid; border-bottom-width: thin; border-bottom-color:  rgba(0,0,0,0.3) ; margin-left: 5%;">
+        <div style="width: 90%; height: 100px; position: relative; border-bottom-style: solid; border-bottom-width: thin; border-bottom-color:  rgba(0,0,0,0.3) ; margin-left: 5%; margin-top: 10px;">
             <div style="position: absolute; width: 80px; height: 80px; padding: 10px;">
                 <img src="img/John_Doe.jpg" class="fd-img fd-img-br">
             </div>
@@ -22,10 +22,10 @@
             </div>
         </div>
         <div on-tap="selectCategoryOption()" class="ptm plm prm pbm" style="margin-left: 5%;width: 90%;border-bottom-style: solid; border-bottom-width: thin; border-bottom-color:  rgba(0,0,0,0.1) ;">
-            <p><b><i class="ion-pound"></i><span class="plm">Add Tags</span></b></p>
+            <p><b><i class="ion-pound"></i><span ng-if="!hashtags" class="plm">Add Tags</span><span ng-if="hashtags" class="fd-chips" ng-repeat="tag in hashtags" style="margin: 0px 0px 0px 10px;">{{tag}} </span></b></p>
         </div>
         <div on-tap="selectLocation()" class="ptm plm prm pbm" style="margin-left: 5%;width: 90%;border-bottom-style: solid; border-bottom-width: thin; border-bottom-color: rgba(0,0,0,0.1) ;">
-            <p><b><i class="ion-ios-location"></i><span class="plm">{{final_obj.location.formatted_address}}</span></b></p>
+            <p><b><i class="ion-ios-location"></i><span class="plm">{{final_obj.loc_name}}</span></b></p>
         </div>
         <div class="ptm plm prm pbm" style="margin-left: 5%;width: 90%;border-bottom-style: solid; border-bottom-width: thin; border-bottom-color:  rgba(0,0,0,0.1) ;" modal-select="" ng-model="selectCategory" options="selectables" modal-title="Select Category">
             <div class="option">
@@ -33,8 +33,8 @@
             </div>
             <p><b><i class="ion-ios-pricetags"></i><span class="plm">{{selectCategory.category_name}}</span></b></p>
         </div>
-        <div class="ptm plm prm pbm" style="margin-left: 5%;width: 90%;border-bottom-style: solid; border-bottom-width: thin; border-bottom-color: rgba(0,0,0,0.1) ;">
-            <p><b><i class="ion-cash"></i><span class="plm">Add Price</span></b></p>
+        <div class="pts plm prm pbs" style="margin-left: 5%;width: 90%;border-bottom-style: solid; border-bottom-width: thin; border-bottom-color: rgba(0,0,0,0.1) ;">
+            <p><b><i class="ion-cash"></i><span class="plm"><input type="number" name="" style="display: inline; " placeholder="Add Price" ng-model="final_obj.price"></span></b></p>
         </div>
     </ion-content>
 </ion-view>
