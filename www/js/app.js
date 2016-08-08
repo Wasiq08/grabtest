@@ -24,7 +24,7 @@ angular.module('app', ['ionic', 'ngCordova', 'ionic-datepicker', 'ngGeolocation'
     });
 })
 
-.run(function($rootScope, $state, localStorageService) {
+.run(function($rootScope, $state, localStorageService, User, Posts) {
 
     $rootScope.navigateState = function(state) {
         console.log("state is", state)
@@ -55,8 +55,43 @@ angular.module('app', ['ionic', 'ngCordova', 'ionic-datepicker', 'ngGeolocation'
     $rootScope._ = window._;
 
     $rootScope.logout = function() {
-        localStorageService.set("auth_token", null);
-        localStorageService.set("loggedInUser", null);
-        $state.go('login')
+        User.logout().success(function(res) {
+                localStorageService.set("auth_token", null);
+                localStorageService.set("loggedInUser", null);
+                $state.go('login')
+            })
+            .error(function(err) {
+
+            })
+
     }
+
+    $rootScope.likeUnlikePost = function(likes, postid, data) {
+        var uid = localStorageService.get('loggedInUser')._id;
+        if (data.isLiked) {
+            Posts.removeLike(postid)
+                .success(function(res) {
+                    data.isLiked = false;
+                    for (var i = 0; i < likes.length; i++) {
+                        if (likes[i].user == uid) {
+                            likes.splice(i,1)
+                        } 
+                    }
+                })
+                .error(function(err) {
+
+                })
+        } else {
+            Posts.addLike(postid)
+                .success(function(res) {
+                    data.isLiked = true;
+                    likes.push({ user: uid })
+                })
+                .error(function(err) {
+
+                })
+        }
+    }
+
+
 })

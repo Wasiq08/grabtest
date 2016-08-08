@@ -25,7 +25,7 @@ angular.module('app.routes', [])
     })
 
     .state('sidemenu.profile', {
-        url: '/profile', 
+        url: '/profile/:id', 
         views: {
             'menuContent' : {
                 templateUrl: 'templates/profile.html',
@@ -35,7 +35,7 @@ angular.module('app.routes', [])
     })
 
     .state('sidemenu.foodprofile', {
-        url: '/foodprofile',
+        url: '/foodprofile/:id',
         views:{
             'menuContent' : {
                 templateUrl : 'templates/foodprofile.html',

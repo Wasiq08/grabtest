@@ -58,6 +58,18 @@ angular.module('CoreApi', ['CoreApiUtilities'])
         var url = httpService.Utils.buildUrl(new Array('consumer', id));
         return httpService.$http.get(url, config);
     }
+
+    this.getUserPost = function(id) {
+        var config = httpService.Utils.getHeader();
+        var url = httpService.Utils.buildUrl(new Array('user', id, 'post'));
+        return httpService.$http.get(url, config);
+    }
+
+    this.logout = function() {
+        var config = httpService.Utils.getHeader();
+        var url = httpService.Utils.buildUrl(new Array('logout'));
+        return httpService.$http.post(url, {}, config);
+    }
 }])
 
 .service('Posts', ['httpService', function(httpService) {
@@ -71,6 +83,12 @@ angular.module('CoreApi', ['CoreApiUtilities'])
         var config = httpService.Utils.getHeader();
         var url = httpService.Utils.buildUrl(new Array('posts'));
         return httpService.$http.post(url, params, config);
+    }
+
+    this.get = function(postid) {
+        var config = httpService.Utils.getHeader();
+        var url = httpService.Utils.buildUrl(new Array('posts', postid));
+        return httpService.$http.get(url, config);
     }
 
     this.getAllFeeds = function(urlParams) {
@@ -87,8 +105,33 @@ angular.module('CoreApi', ['CoreApiUtilities'])
 
     this.addLike = function(postid) {
         var config = httpService.Utils.getHeader();
-        var url = httpService.Utils.buildUrl(new Array('posts', postid,'like'));
+        console.log("config", config)
+        var url = httpService.Utils.buildUrl(new Array('posts', postid, 'like'));
+        return httpService.$http.post(url, {}, config);
+    }
+
+    this.removeLike = function(postid) {
+        var config = httpService.Utils.getHeader();
+        var url = httpService.Utils.buildUrl(new Array('posts', postid, 'unlike'));
+        return httpService.$http.delete(url, config);
+    }
+
+    this.addComment = function(params, postid) {
+        var config = httpService.Utils.getHeader();
+        var url = httpService.Utils.buildUrl(new Array('posts', postid, 'comments'));
         return httpService.$http.post(url, params, config);
+    }
+
+    this.getAllComments = function(postid) {
+        var config = httpService.Utils.getHeader();
+        var url = httpService.Utils.buildUrl(new Array('posts', postid, 'comments'));
+        return httpService.$http.get(url, config);
+    }
+
+    this.deleteComment = function(postid, commentid) {
+        var config = httpService.Utils.getHeader();
+        var url = httpService.Utils.buildUrl(new Array('posts', postid, 'comments', commentid));
+        return httpService.$http.delete(url, config);
     }
 }])
 

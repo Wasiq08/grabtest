@@ -2,8 +2,8 @@ angular.module('app.controllers', [])
 
 .controller('loginCtrl', function($scope, User, $ionicPopup, $ionicLoading, $state, localStorageService, $rootScope) {
     $scope.users = {};
-    $scope.users.user_email = 'ameerhamza810@gmail.com';
-    $scope.users.password = '123'
+    // $scope.users.user_email = 'ameerhamza810@gmail.com';
+    // $scope.users.password = '123'
 
     $scope.show = function() {
         $ionicLoading.show({
@@ -259,10 +259,10 @@ angular.module('app.controllers', [])
                             }, function(err) {
                                 console.log(err)
                                 $scope.isLoading = false;
-                                    // Error
+                                // Error
                             }, function(progress) {
-                                console.log("progress",progress)
-                                // constant progress updates
+                                console.log("progress", progress)
+                                    // constant progress updates
                             });
                         //$rootScope.imageData = "data:image/jpeg;base64," + imageData;
                         //$state.go('sidemenu.imagefilter');
@@ -522,7 +522,7 @@ angular.module('app.controllers', [])
     }
 })
 
-.controller('dashboardCtrl', function($rootScope, ImageService, $ionicLoading, localStorageService, $scope, Posts, $cordovaFileTransfer, $cordovaCamera, $state) {
+.controller('dashboardCtrl', function($rootScope, $ionicPopover, ImageService, $ionicLoading, localStorageService, $scope, Posts, $cordovaFileTransfer, $cordovaCamera, $state) {
     console.log("in dashboard ctrl");
 
     // $scope.feeds = [{
@@ -589,25 +589,34 @@ angular.module('app.controllers', [])
 
     // }]
 
-    $rootScope.imageData = "img/dessert.jpg";
+    //$rootScope.imageData = "img/dessert.jpg";
 
     $scope.feeds = []
     var page = offset = 0;
     var limit = 5;
+    var uid = localStorageService.get('loggedInUser')._id;
 
     $scope.noMoreFeedContent = true;
     $scope.getDashboardFeed = function(start) {
         var _start = start || false
         $scope.noMoreFeedContent = true;
         Posts.getAllFeeds({ offset: offset, limit: limit }).success(function(res) {
-                console.log(res);
                 $scope.isLoading = false;
                 if (_start) {
                     $scope.feeds = [];
                 }
                 for (var i = 0; i < res.data.length; i++) {
                     $scope.feeds.push(res.data[i]);
+                    for (var j = 0; j < res.data[i].feed.likes.length; j++) {
+                        if (uid == res.data[i].feed.likes[j].user) {
+                            $scope.feeds[i].isLiked = true;
+                        } else {
+                            $scope.feeds[i].isLiked = false;
+                        }
+                    }
                 }
+
+                console.log($scope.feeds)
                 if (res.data.length < limit) {
                     $scope.noMoreFeedContent = false;
                 }
@@ -648,37 +657,9 @@ angular.module('app.controllers', [])
 
         $cordovaCamera.getPicture(options).then(function(imageData) {
             console.log(imageData)
-            var options = {
-                fileKey: "uploadfile",
-                fileName: imageData.substr(imageData.lastIndexOf('/') + 1),
-                chunkedMode: false,
-                mimeType: "image/jpg",
-                headers: {
-                    'x-access-token': localStorageService.get("auth_token")
-                }
-            };
-            //$scope.show();
-            $cordovaFileTransfer.upload('http://162.243.119.60:3000/upload/image?imageof=post', imageData, options)
-                .then(function(res) {
-                    console.log(JSON.stringify(localStorageService.get("auth_token")))
-                    console.log("success", JSON.parse(res.response))
-                    $scope.finalImage = JSON.parse(res.response);
-                    $rootScope.imageData = $scope.finalImage.data.file[0].medium;
-                    localStorageService.set("file_id", $scope.finalImage.data.fileId)
-                    ImageService.setImage({
-                        image: $rootScope.imageData,
-                        class: ''
-                    })
-                    $state.go('sidemenu.createpost');
-                    //$scope.hide();
-                    // Success!
-                }, function(err) {
-                    console.log(err)
-                        //$scope.hide();
-                        // Error
-                }, function(progress) {
-                    // constant progress updates
-                });
+            $state.go('sidemenu.createpost');
+
+            $rootScope.postimagedata = imageData;
             //= "data:image/jpeg;base64," + imageData;
 
 
@@ -689,18 +670,89 @@ angular.module('app.controllers', [])
         });
     }
 
+    $scope.navigateToFoodPost = function(postid) {
+        $state.go('sidemenu.foodprofile', { id: postid })
+    }
+
+    $scope.navigateToUser = function(uid) {
+        $state.go('sidemenu.profile', { id: uid })
+    }
+
+    // .fromTemplateUrl() method
+    $ionicPopover.fromTemplateUrl('templates/partials/popover.html', {
+        scope: $scope
+    }).then(function(popover) {
+        $scope.popover = popover;
+    });
+
+
+    $scope.openPopover = function($event) {
+        $scope.popover.show($event);
+    };
+    $scope.closePopover = function() {
+        $scope.popover.hide();
+    };
+    //Cleanup the popover when we're done with it!
+    $scope.$on('$destroy', function() {
+        $scope.popover.remove();
+    });
+    // Execute action on hide popover
+    $scope.$on('popover.hidden', function() {
+        // Execute action
+    });
+    // Execute action on remove popover
+    $scope.$on('popover.removed', function() {
+        // Execute action
+    });
+
 })
 
-.controller('CreatePostCtrl', function($scope, localStorageService, appModalService, Posts, $rootScope, ImageService, $cordovaGeolocation, $ionicHistory, $state) {
+.controller('CreatePostCtrl', function($scope, $cordovaFileTransfer, localStorageService, appModalService, Posts, $rootScope, ImageService, $cordovaGeolocation, $ionicHistory, $state) {
     $scope.imgobj = ImageService.getImage();
     $scope.final_obj = {};
+    $scope.isloading = true;
+    $scope.loadedvalue = 0.0;
+    var imageData = $rootScope.postimagedata;
     //$scope.final_obj.location = {"lon":51.12076493195686,"lat":-113.98040771484375};
+    try {
+        var options = {
+            fileKey: "uploadfile",
+            fileName: imageData.substr(imageData.lastIndexOf('/') + 1),
+            chunkedMode: false,
+            mimeType: "image/jpg",
+            headers: {
+                'x-access-token': localStorageService.get("auth_token")
+            }
+        };
+        //$scope.show();
+        $cordovaFileTransfer.upload('http://162.243.119.60:3000/upload/image?imageof=post', imageData, options)
+            .then(function(res) {
+                $scope.finalImage = JSON.parse(res.response);
+                $scope.imageData = $scope.finalImage.data.file[0].medium;
+                $scope.isloading = false;
+                $scope.final_obj.post_image_id = $scope.finalImage.data.fileId;
+            }, function(err) {
+                console.log(err)
+                $scope.isloading = false;
+                //$scope.hide();
+                // Error
+            }, function(progress) {
 
+                var value = ((progress.loaded / progress.total) * 100).toString().split(".")[0];
+                //var a = 12345.67;
 
+                //alert(value.toString().split(".")[0]); ///before
+                //alert(value.toString().split(".")[1]); ///after
+                $scope.loadedvalue = value;
+                //console.log(value)
+                // constant progress updates
+            });
+    } catch (err) {
 
-    $scope.final_obj.affiliation = "Nissan";
+    }
+
     $scope.final_obj.loc_name = "Add Location";
-    $scope.final_obj.post_image_id = localStorageService.get("file_id")
+
 
     Posts.getCategories().success(function(res) {
             console.log(res);
@@ -713,18 +765,26 @@ angular.module('app.controllers', [])
     $scope.selectCategory = {}
     $scope.selectCategory.category_name = "Select Category";
 
-    $scope.final_obj.category = "5799afbc88aed4ec19fdc652";
+    $scope.final_obj.category = "Select Category";
     $scope.final_obj.price = 30;
     $scope.final_obj.remark = "";
-
-
-
-
 
     $scope.getCurrentPostion = function() {
         console.log("hello")
 
 
+    }
+
+
+    $scope.selectCategory = function() {
+        appModalService.show('templates/partials/category.html', 'SelectCategoryCtrl as vm', {}).then(function(res) {
+            console.log(res)
+            if (res != null) {
+                $scope.selectedCategory = res
+                $scope.final_obj.category = res.category_name;
+                $scope.selectCategory.category_name = res.category_name;
+            }
+        })
     }
 
     $scope.selectCategoryOption = function() {
@@ -780,6 +840,38 @@ angular.module('app.controllers', [])
     }
 
 
+})
+
+.controller('SelectCategoryCtrl', function($scope, Posts) {
+    var vm = this;
+
+    $scope.isLoading = true;
+    // CategoriesServices.getAll().success(function(res) {
+    //     $scope.categories = res.data;
+    //     $scope.isLoading = false;
+
+    // })
+
+    Posts.getCategories().success(function(res) {
+            console.log(res);
+            $scope.categories = res.data
+            $scope.isLoading = false;
+        })
+        .error(function(err) {
+            console.log(err)
+        })
+
+    vm.confirm = function(category) {
+        $scope.closeModal(category);
+    };
+
+    vm.selectedItem = function(category) {
+        vm.category = category
+    };
+
+    vm.cancel = function() {
+        $scope.closeModal(null);
+    };
 })
 
 .controller('LocationModalCtrl', ['$scope', '$q', '$cordovaGeolocation', function($scope, $q, $cordovaGeolocation) {
@@ -939,7 +1031,7 @@ angular.module('app.controllers', [])
     };
 }])
 
-.controller('ProfileCtrl', function($scope) {
+.controller('ProfileCtrl', function($scope, User, $stateParams) {
     $scope.feeds = [{
         src: 'img/waffle.jpg',
         name: 'Awsome Waffle! The hot Chocolate Like Dream!',
@@ -959,46 +1051,113 @@ angular.module('app.controllers', [])
         user_src: 'img/evans.jpeg',
         user_name: 'Michael Evans'
     }]
+
+    User.getUser($stateParams.id).success(function(res) {
+        console.log(res)
+        $scope.user = res.data;
+    })
+
+    User.getUserPost($stateParams.id).success(function(res) {
+            console.log(res)
+            $scope.posts = res.data;
+        })
+        .error(function(err) {
+            console.log(err)
+        })
 })
 
-.controller('FoodProfileCtrl', function($scope) {
-    $scope.x = {
-        src: 'img/waffle.jpg',
-        name: 'Awsome Waffle! The hot Chocolate Like Dream! Awsome Waffle! The hot Chocolate Like Dream!',
-        price: '$ 11.24',
-        user_src: 'img/John_Doe.jpg',
-        user_name: 'John Doe'
+.controller('FoodProfileCtrl', function($scope, Posts, $stateParams, $ionicPopup) {
+    // $scope.x = {
+    //     src: 'img/waffle.jpg',
+    //     name: 'Awsome Waffle! The hot Chocolate Like Dream! Awsome Waffle! The hot Chocolate Like Dream!',
+    //     price: '$ 11.24',
+    //     user_src: 'img/John_Doe.jpg',
+    //     user_name: 'John Doe'
+    // }
+
+    // $scope.comments = [{
+    //     user_src: "img/John_Doe.jpg",
+    //     user_name: "John Doe",
+    //     comment: "Nice thats the way Mahi way!",
+    //     created: "few secs ago!"
+    // }, {
+    //     user_src: "img/maria.jpg",
+    //     user_name: "Ana Maria",
+    //     comment: "You cant see meeeeeeeeeee!",
+    //     created: "few secs ago!"
+    // }, {
+    //     user_src: "img/evans.jpeg",
+    //     user_name: "Michael Evans",
+    //     comment: "Dil Dil Pakistan Jaan Jaan Pakistan! Dil Dil Pakistan Jaan Jaan Pakistan!",
+    //     created: "few secs ago!"
+    // }, {
+    //     user_src: "img/John_Doe.jpg",
+    //     user_name: "John Doe",
+    //     comment: "Nice thats the way Mahi way!",
+    //     created: "few secs ago!"
+    // }, {
+    //     user_src: "img/maria.jpg",
+    //     user_name: "Ana Maria",
+    //     comment: "You cant see meeeeeeeeeee!",
+    //     created: "few secs ago!"
+    // }, {
+    //     user_src: "img/evans.jpeg",
+    //     user_name: "Michael Evans",
+    //     comment: "Dil Dil Pakistan Jaan Jaan Pakistan! Dil Dil Pakistan Jaan Jaan Pakistan!",
+    //     created: "few secs ago!"
+    // }]
+
+    $scope.postid = $stateParams.id;
+    Posts.get($stateParams.id).success(function(res) {
+            console.log(res)
+            $scope.post = res.data[0];
+        })
+        .error(function(err) {
+
+        })
+
+    Posts.getAllComments($stateParams.id).success(function(res) {
+            console.log(res)
+            $scope.comments = res.data.comments;
+        })
+        .error(function(err) {
+            console.log(err);
+
+        })
+    $scope.params = {};
+    $scope.comment = function() {
+
+        Posts.addComment($scope.params, $scope.postid).success(function(res) {
+                console.log(res)
+                $scope.comments.push(res.data.comments)
+                $scope.params.text = "";
+            })
+            .error(function(err) {
+
+            })
     }
 
-    $scope.comments = [{
-        user_src: "img/John_Doe.jpg",
-        user_name: "John Doe",
-        comment: "Nice thats the way Mahi way!",
-        created: "few secs ago!"
-    }, {
-        user_src: "img/maria.jpg",
-        user_name: "Ana Maria",
-        comment: "You cant see meeeeeeeeeee!",
-        created: "few secs ago!"
-    }, {
-        user_src: "img/evans.jpeg",
-        user_name: "Michael Evans",
-        comment: "Dil Dil Pakistan Jaan Jaan Pakistan! Dil Dil Pakistan Jaan Jaan Pakistan!",
-        created: "few secs ago!"
-    }, {
-        user_src: "img/John_Doe.jpg",
-        user_name: "John Doe",
-        comment: "Nice thats the way Mahi way!",
-        created: "few secs ago!"
-    }, {
-        user_src: "img/maria.jpg",
-        user_name: "Ana Maria",
-        comment: "You cant see meeeeeeeeeee!",
-        created: "few secs ago!"
-    }, {
-        user_src: "img/evans.jpeg",
-        user_name: "Michael Evans",
-        comment: "Dil Dil Pakistan Jaan Jaan Pakistan! Dil Dil Pakistan Jaan Jaan Pakistan!",
-        created: "few secs ago!"
-    }]
+    $scope.showConfirm = function(id) {
+        var confirmPopup = $ionicPopup.confirm({
+            title: 'Consume Ice Cream',
+            template: 'Are you sure you want to eat this ice cream?'
+        });
+        confirmPopup.then(function(res) {
+            if (res) {
+                Posts.deleteComment($stateParams.id, id).success(function(res) {
+                        console.log(res)
+                        for (var i = 0; i < $scope.comments.length; i++) {
+                            if (id == $scope.comments[i]._id) {
+                                $scope.comments.splice(i, 1);
+                            }
+                        }
+                    })
+                    .error(function(err) {
+
+                    })
+            } else {
+
+            }
+        });
+    };
 })

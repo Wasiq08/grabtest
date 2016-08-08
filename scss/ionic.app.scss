@@ -13446,3 +13446,19 @@ div.hscroller {
         transform: rotate(360deg);
     }
 }
+
+.custom-fd-bar.bar-footer {
+    height: auto;
+}
+
+.fd-br-top {
+    border-top: 2px solid #e4e4e4;
+}
+
+.sb-bg {
+    background-color: #f9f9f9;
+}
+
+.fd-icon-send:before {
+    content: "\e953";
+}
