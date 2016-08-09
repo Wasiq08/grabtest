@@ -17,17 +17,17 @@ angular.module('app.routes', [])
     .state('sidemenu.dashboard', {
         url: '/dashboard',
         views: {
-          'menuContent' : {
-              templateUrl: 'templates/dashboard.html',
-              controller: 'dashboardCtrl'
-          }
+            'menuContent': {
+                templateUrl: 'templates/dashboard.html',
+                controller: 'dashboardCtrl'
+            }
         }
     })
 
     .state('sidemenu.profile', {
-        url: '/profile/:id', 
+        url: '/profile/:id',
         views: {
-            'menuContent' : {
+            'menuContent': {
                 templateUrl: 'templates/profile.html',
                 controller: 'ProfileCtrl'
             }
@@ -36,19 +36,19 @@ angular.module('app.routes', [])
 
     .state('sidemenu.foodprofile', {
         url: '/foodprofile/:id',
-        views:{
-            'menuContent' : {
-                templateUrl : 'templates/foodprofile.html',
+        views: {
+            'menuContent': {
+                templateUrl: 'templates/foodprofile.html',
                 controller: 'FoodProfileCtrl'
             }
         }
-        
+
     })
 
     .state('sidemenu.imagefilter', {
         url: '/imagefilter',
         views: {
-            'menuContent' : {
+            'menuContent': {
                 templateUrl: 'templates/imagefilter.html',
                 controller: 'ImageFilterCtrl'
             }
@@ -58,7 +58,7 @@ angular.module('app.routes', [])
     .state('sidemenu.createpost', {
         url: '/createpost',
         views: {
-            'menuContent' : {
+            'menuContent': {
                 templateUrl: 'templates/createpost.html',
                 controller: 'CreatePostCtrl'
             }
@@ -115,7 +115,9 @@ angular.module('app.routes', [])
 
 
 
-    $urlRouterProvider.otherwise('/main')
+    //$urlRouterProvider.otherwise('/main')
+    $urlRouterProvider.otherwise('/sidemenu/dashboard')
+
 
 
 

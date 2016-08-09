@@ -25,12 +25,20 @@ angular.module('app.controllers', [])
         };
         $scope.show();
         User.login(params).success(function(res) {
+                console.log(res)
                 if (res.meta.status == 200) {
                     localStorageService.set("auth_token", res.data.auth.token);
                     localStorageService.set("loggedInUser", res.data.auth.user);
                     $rootScope.user = localStorageService.get("loggedInUser");
-                    $scope.hide();
-                    $state.go('welcome')
+                    //$rootScope.$broadcast('User_changed', {user: localStorageService.get("loggedInUser")})
+                    if (res.data.auth.user.on_boarding == 0) {
+                        $scope.hide();
+                        $state.go('welcome')
+                    } else {
+                        $scope.hide();
+                        $state.go('sidemenu.dashboard')
+                    }
+
                 }
 
             })
@@ -57,8 +65,10 @@ angular.module('app.controllers', [])
 })
 
 .controller('SideMenuCtrl', function($scope, $rootScope, localStorageService) {
-    $rootScope.user = localStorageService.get("loggedInUser")
-    console.log($scope.user)
+    $rootScope.user = localStorageService.get("loggedInUser");
+    $rootScope.$on('User_changed', function(event, args) {
+        $rootScope.user = args.user;
+    })
 
 })
 
@@ -124,6 +134,7 @@ angular.module('app.controllers', [])
                                 localStorageService.set("auth_token", res.meta.data.auth.token);
                                 localStorageService.set("loggedInUser", res.meta.data.auth.user);
                                 $rootScope.user = localStorageService.get("loggedInUser")
+                                    //$rootScope.$broadcast('User_changed', {user: localStorageService.get("loggedInUser") });
                                 console.log($scope.user)
                                 $state.go('uploadimage')
                                 $scope.hide();
@@ -244,6 +255,7 @@ angular.module('app.controllers', [])
                                         console.log(response)
                                         localStorageService.set("loggedInUser", response.data)
                                         $rootScope.user = localStorageService.get("loggedInUser")
+                                            //$rootScope.$broadcast('User_changed',{user: localStorageService.get("loggedInUser")})
                                         console.log($scope.user)
                                         $scope.isLoading = false;
                                         //$scope.hide();
@@ -522,9 +534,16 @@ angular.module('app.controllers', [])
     }
 })
 
-.controller('dashboardCtrl', function($rootScope, $ionicPopover, ImageService, $ionicLoading, localStorageService, $scope, Posts, $cordovaFileTransfer, $cordovaCamera, $state) {
+.controller('dashboardCtrl', function($rootScope, $ionicHistory, $ionicPopover, ImageService, $ionicLoading, localStorageService, $scope, Posts, $cordovaFileTransfer, $cordovaCamera, $state, $ionicModal) {
     console.log("in dashboard ctrl");
+    if (localStorageService.get('loggedInUser')) {
 
+    } else {
+        $state.go('login')
+    }
+    $ionicHistory.nextViewOptions({
+        disableBack: true
+    });
     // $scope.feeds = [{
     //     user: {
     //         src: 'img/waffle.jpg',
@@ -590,6 +609,18 @@ angular.module('app.controllers', [])
     // }]
 
     //$rootScope.imageData = "img/dessert.jpg";
+    $ionicModal.fromTemplateUrl('templates/search-filters.html', {
+        scope: $scope,
+        animation: 'slide-in-up'
+    }).then(function(modal) {
+        $scope.modal = modal;
+    });
+    $scope.openModal = function() {
+        $scope.modal.show();
+    };
+    $scope.closeModal = function() {
+        $scope.modal.hide();
+    };
 
     $scope.feeds = []
     var page = offset = 0;
@@ -1066,7 +1097,7 @@ angular.module('app.controllers', [])
         })
 })
 
-.controller('FoodProfileCtrl', function($scope, Posts, $stateParams, $ionicPopup) {
+.controller('FoodProfileCtrl', function($scope, localStorageService, Posts, $stateParams, $ionicPopup) {
     // $scope.x = {
     //     src: 'img/waffle.jpg',
     //     name: 'Awsome Waffle! The hot Chocolate Like Dream! Awsome Waffle! The hot Chocolate Like Dream!',
@@ -1106,11 +1137,20 @@ angular.module('app.controllers', [])
     //     comment: "Dil Dil Pakistan Jaan Jaan Pakistan! Dil Dil Pakistan Jaan Jaan Pakistan!",
     //     created: "few secs ago!"
     // }]
+    $scope.uid = localStorageService.get('loggedInUser')._id;
 
     $scope.postid = $stateParams.id;
     Posts.get($stateParams.id).success(function(res) {
             console.log(res)
             $scope.post = res.data[0];
+            for (var j = 0; j < res.data[0].likes.length; j++) {
+                if ($scope.uid == res.data[0].likes[j].user) {
+                    $scope.post.isLiked = true;
+                } else {
+                    $scope.post.isLiked = false;
+                }
+            }
+
         })
         .error(function(err) {
 

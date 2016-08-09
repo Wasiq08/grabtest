@@ -24,13 +24,14 @@ angular.module('app', ['ionic', 'ngCordova', 'ionic-datepicker', 'ngGeolocation'
     });
 })
 
-.run(function($rootScope, $state, localStorageService, User, Posts) {
+.run(function($rootScope, $state, localStorageService, User, Posts, $ionicSideMenuDelegate, $ionicLoading) {
 
     $rootScope.navigateState = function(state) {
         console.log("state is", state)
         $state.go(state)
     }
 
+    $rootScope.defaultUser = 'img/user.png';
 
     $rootScope.locationAddressFix = function(place) {
         if (place == undefined) return {};
@@ -55,10 +56,17 @@ angular.module('app', ['ionic', 'ngCordova', 'ionic-datepicker', 'ngGeolocation'
     $rootScope._ = window._;
 
     $rootScope.logout = function() {
+        $ionicLoading.show({
+            template: 'Logging out!'
+        })
+        $rootScope.user = null;
+        $ionicSideMenuDelegate.toggleLeft();
         User.logout().success(function(res) {
                 localStorageService.set("auth_token", null);
                 localStorageService.set("loggedInUser", null);
+
                 $state.go('login')
+                $ionicLoading.hide()
             })
             .error(function(err) {
 
@@ -74,8 +82,8 @@ angular.module('app', ['ionic', 'ngCordova', 'ionic-datepicker', 'ngGeolocation'
                     data.isLiked = false;
                     for (var i = 0; i < likes.length; i++) {
                         if (likes[i].user == uid) {
-                            likes.splice(i,1)
-                        } 
+                            likes.splice(i, 1)
+                        }
                     }
                 })
                 .error(function(err) {

@@ -9723,7 +9723,7 @@ ion-slides {
     bottom: 15px;
     left: 0;
     width: 100%;
-    color: #666666;
+    color: white;
     text-align: center;
     font-size: 30px;
 }
@@ -13429,6 +13429,14 @@ div.hscroller {
     margin-right: auto;
 }
 
+.loader-profile {
+    border: 1px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 1px solid #3498db;
+    width: 20px;
+    height: 20px;
+}
+
 @-webkit-keyframes spin {
     0% {
         -webkit-transform: rotate(0deg);
@@ -13461,4 +13469,8 @@ div.hscroller {
 
 .fd-icon-send:before {
     content: "\e953";
+}
+
+.like-color {
+  color: red;
 }
