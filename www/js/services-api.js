@@ -70,6 +70,16 @@ angular.module('CoreApi', ['CoreApiUtilities'])
         var url = httpService.Utils.buildUrl(new Array('logout'));
         return httpService.$http.post(url, {}, config);
     }
+
+
+    this.authFacebook = function(params) {
+        var config = httpService.Utils.getHeader();
+        var url = httpService.Utils.buildUrl(new Array('auth','facebook'));
+        return httpService.$http.post(url, params, config);
+    }
+
+
+
 }])
 
 .service('Posts', ['httpService', function(httpService) {

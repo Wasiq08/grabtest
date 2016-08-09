@@ -1,6 +1,6 @@
 angular.module('app.controllers', [])
 
-.controller('loginCtrl', function($scope, User, $ionicPopup, $ionicLoading, $state, localStorageService, $rootScope) {
+.controller('loginCtrl', function($scope, $cordovaFacebook, User, $q, $ionicPopup, $ionicLoading, $state, localStorageService, $rootScope, $ionicModal) {
     $scope.users = {};
     // $scope.users.user_email = 'ameerhamza810@gmail.com';
     // $scope.users.password = '123'
@@ -10,6 +10,7 @@ angular.module('app.controllers', [])
             template: 'Loading...'
         })
     };
+
     $scope.hide = function() {
         $ionicLoading.hide()
     };
@@ -53,6 +54,103 @@ angular.module('app.controllers', [])
             console.log('Thank you for not eating my delicious ice cream cone');
         });
     };
+
+    ////////////////////////// SOCIAL MEDIA INTEGRATION
+    $ionicModal.fromTemplateUrl('templates/authFacebook.html', {
+        scope: $scope,
+        animation: 'slide-in-up'
+    }).then(function(modal) {
+        $scope.modal = modal;
+    });
+
+    $scope.facebookDetails = {};
+    $scope.createFbUser = function(data) {
+        $scope.modal.hide();
+         $scope.user = {};
+         $scope.user.email  = data.email;
+         $scope.user.password = data.password;
+         
+         console.log("FACEBOOK MODEL-DATA", data);
+         console.log("FACEBOOK NAME",$scope.facebookName);
+         data.name = $scope.facebookName;
+         console.log("FINAL POSTING REGISTER",data);
+
+        User.register(data)
+        .success(function(result) {  
+            console.log("REGISTER DATA", result);
+        }).success(function(){
+          var params = { email: $scope.user.email , password: $scope.user.password };
+                    User.login(params).success(function(res) {
+                            console.log("LOGIN KA RESPONSE",res)
+                            if (res.meta.status == 200) {
+                                localStorageService.set("auth_token", res.meta.data.auth.token);
+                                localStorageService.set("loggedInUser", res.meta.data.auth.user);
+                                $rootScope.user = localStorageService.get("loggedInUser")
+                                console.log($scope.user)
+                                $state.go('welcome')
+                            }
+
+                        })
+                        .error(function(err) {
+                            console.log(err)
+                        })
+
+        console.log("AUTOMATIC LOGIN");
+        }).success(function(){
+        console.log("AUTHENICATE FACEBOOK");
+        var params = { facebook: $scope.facebookDetails};
+            User.authFacebook(params)
+                    .success(function(result) {  
+                        console.log("REGISTER FACEBOOK", result);
+                    })
+    })
+
+}
+    $scope.facebookSignIn = function() {
+
+        $cordovaFacebook.login(["public_profile", "email", "user_friends", 'user_birthday'])
+            .then(function(success) {
+                console.log("LOGGGGGGGGGGG", success);
+                /*
+                 * Get user data here. 
+                 * For more, explore the graph api explorer here: https://developers.facebook.com/tools/explorer/
+                 * "me" refers to the user who logged in. Dont confuse it as some hardcoded string variable. 
+                 * 
+                 */
+                //To know more available fields go to https://developers.facebook.com/tools/explorer/
+                $cordovaFacebook.api("me?fields=id,name,picture", [])
+                    .then(function(result) {
+
+                        $scope.modal.show();
+                        console.log("RESPONSE ", result)
+                        $scope.facebookName = result.name
+                            /*;
+                             * As an example, we are fetching the user id, user name, and the users profile picture
+                             * and assiging it to an object and then we are logging the response.
+                             */
+                        $scope.facebookDetails = {
+                                id: result.id,
+                                name: result.name,
+                                pic: result.picture.data.url
+                            }
+                            //Do what you wish to do with user data. Here we are just displaying it in the view
+                        // $scope.fbData = JSON.stringify(userData, null, 4);
+                        console.log("RESULT", $scope.facebookDetails);
+
+                    }, function(error) {
+                        console.log("MEEEEEE ERROR", error)
+                            // Error message
+                    })
+
+            }, function(error) {
+                // Facebook returns error message due to which login was cancelled.
+                // Depending on your platform show the message inside the appropriate UI widget
+                // For example, show the error message inside a toast notification on Android
+            });
+
+    }
+
+
 
 })
 
