@@ -65,6 +65,26 @@ angular.module('app.routes', [])
         }
     })
 
+    .state('sidemenu.turn-on-location', {
+        url: '/turn-on-location',
+        views: {
+            'menuContent': {
+                templateUrl: 'templates/turn-on-location.html',
+                controller: 'TurnLocationCtrl'
+            }
+        }
+    })
+
+    .state('sidemenu.map', {
+        url: '/map',
+        views: {
+            'menuContent': {
+                templateUrl: 'templates/map.html',
+                controller: 'MapCtrl'
+            }
+        }
+    })
+
     .state('login', {
         url: '/main',
         templateUrl: 'templates/login.html',

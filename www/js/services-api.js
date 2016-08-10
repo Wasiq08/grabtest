@@ -133,6 +133,12 @@ angular.module('CoreApi', ['CoreApiUtilities'])
         var url = httpService.Utils.buildUrl(new Array('posts', postid, 'comments', commentid));
         return httpService.$http.delete(url, config);
     }
+
+    this.insertLocation = function(params) {
+        var config = httpService.Utils.getHeader();
+        var url = httpService.Utils.buildUrl(new Array('location'));
+        return httpService.$http.post(url, params, config);
+    }
 }])
 
 angular.module('CoreApiUtilities', [])

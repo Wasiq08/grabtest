@@ -534,16 +534,14 @@ angular.module('app.controllers', [])
     }
 })
 
-.controller('dashboardCtrl', function($rootScope, $ionicHistory, $ionicPopover, ImageService, $ionicLoading, localStorageService, $scope, Posts, $cordovaFileTransfer, $cordovaCamera, $state, $ionicModal) {
+.controller('dashboardCtrl', function($rootScope, $ionicPopup, $ionicHistory, $ionicPopover, ImageService, $ionicLoading, localStorageService, $scope, Posts, $cordovaFileTransfer, $cordovaCamera, $state, $ionicModal, $cordovaGeolocation) {
     console.log("in dashboard ctrl");
     if (localStorageService.get('loggedInUser')) {
 
     } else {
         $state.go('login')
     }
-    $ionicHistory.nextViewOptions({
-        disableBack: true
-    });
+
     // $scope.feeds = [{
     //     user: {
     //         src: 'img/waffle.jpg',
@@ -617,25 +615,132 @@ angular.module('app.controllers', [])
     });
     $scope.openModal = function() {
         $scope.modal.show();
+
     };
+
     $scope.closeModal = function() {
         $scope.modal.hide();
     };
+
+    $scope.locationFilter = function() {
+        cordova.plugins.diagnostic.requestLocationAuthorization(function(status) {
+            switch (status) {
+                case cordova.plugins.diagnostic.permissionStatus.NOT_REQUESTED:
+                    console.log("Permission not requested");
+                    break;
+                case cordova.plugins.diagnostic.permissionStatus.GRANTED:
+                    cordova.plugins.diagnostic.isLocationEnabled(function(enabled) {
+                        console.log("Location setting is " + (enabled ? "enabled" : "disabled"));
+                        if (!enabled) {
+                            var confirmPopup = $ionicPopup.confirm({
+                                title: 'Your device GPS is off. Do you want turn on your GPS settings?'
+                            });
+
+                            confirmPopup.then(function(res) {
+                                if (res) {
+
+                                    cordova.plugins.diagnostic.switchToLocationSettings();
+                                } else {
+                                    console.log('You are not sure');
+                                }
+                            });
+                        } else {
+                            $ionicLoading.show({
+                                template: 'Please wait!',
+                                duration: 10000
+                            })
+                            var posOptions = { timeout: 10000, enableHighAccuracy: false };
+                            $cordovaGeolocation
+                                .getCurrentPosition(posOptions)
+                                .then(function(position) {
+
+                                    console.log("position is", position);
+                                    //24.876852, 67.062625
+                                    var lat = position.coords.latitude;
+                                    var long = position.coords.longitude;
+                                    console.log(lat);
+                                    console.log(long);
+
+                                    var geocoder = new google.maps.Geocoder();
+                                    var latlng = new google.maps.LatLng(lat, long);
+
+                                    geocoder.geocode({ 'latLng': latlng }, function(results, status) {
+                                        if (status == google.maps.GeocoderStatus.OK) {
+                                            if (results[0]) {
+                                                //$scope.final_obj.location = results[1];
+                                                console.log("result is ", results); // details address
+                                                $scope.loc = {};
+                                                $scope.loc.location_name = results[0].formatted_address;
+                                                var lat = results[1].geometry.location.lat();
+                                                var lng = results[1].geometry.location.lng()
+                                                var arr = [];
+                                                arr[0] = lat;
+                                                arr[1] = lng;
+                                                $scope.loc.location = arr;
+                                                console.log($scope.loc)
+                                                Posts.insertLocation($scope.loc).success(function(res) {
+                                                        console.log(res)
+                                                        $ionicLoading.hide();
+                                                        $scope.modal.hide();
+                                                        $scope.doRefresh();
+                                                    })
+                                                    .error(function(err) {
+                                                        console.log(err)
+                                                    })
+                                                    //$scope.data.address = results[1].formatted_address;
+
+                                                //$scope.locationChanged(results[1].formatted_address)
+                                            } else {
+                                                console.log('Location not found');
+                                            }
+                                        } else {
+                                            console.log('Geocoder failed due to: ' + status);
+                                        }
+                                    }, function(err) {
+                                        console.log("in error", err)
+                                    });
+                                }, function(err) {
+                                    // error
+                                });
+                        }
+                    }, function(error) {
+                        console.error("The following error occurred: " + error);
+
+                    });
+                    break;
+                case cordova.plugins.diagnostic.permissionStatus.DENIED:
+                    console.log("Permission denied");
+                    break;
+                case cordova.plugins.diagnostic.permissionStatus.DENIED_ALWAYS:
+                    console.log("Permission permanently denied");
+                    break;
+            }
+        }, function(error) {
+            console.error(error);
+        });
+    }
 
     $scope.feeds = []
     var page = offset = 0;
     var limit = 5;
     var uid = localStorageService.get('loggedInUser')._id;
 
-    $scope.noMoreFeedContent = true;
+    $scope.noMoreFeedContent = false;
     $scope.getDashboardFeed = function(start) {
-        var _start = start || false
-        $scope.noMoreFeedContent = true;
-        Posts.getAllFeeds({ offset: offset, limit: limit }).success(function(res) {
-                $scope.isLoading = false;
+
+        var _start = start || false;
+        console.log("start ", _start)
+        Posts.getAllFeeds({ offset: offset, limit: limit, loc: location }).success(function(res) {
                 if (_start) {
                     $scope.feeds = [];
                 }
+                if (res.data.length < limit) {
+                    $scope.noMoreFeedContent = true;
+                } else {
+                    $scope.noMoreFeedContent = false;
+                }
+                console.log(res.data.length)
+
                 for (var i = 0; i < res.data.length; i++) {
                     $scope.feeds.push(res.data[i]);
                     for (var j = 0; j < res.data[i].feed.likes.length; j++) {
@@ -648,9 +753,7 @@ angular.module('app.controllers', [])
                 }
 
                 console.log($scope.feeds)
-                if (res.data.length < limit) {
-                    $scope.noMoreFeedContent = false;
-                }
+
 
                 offset = offset + limit;
                 if (_start) {
@@ -667,8 +770,11 @@ angular.module('app.controllers', [])
     };
 
     $scope.doRefresh = function() {
+        console.log("in do refresh")
         offset = 0;
         $scope.getDashboardFeed(true);
+        $scope.noMoreFeedContent = true
+
     }
 
     $rootScope.$on('POST_CREATED', function(event, args) {
@@ -833,24 +939,25 @@ angular.module('app.controllers', [])
 
     $scope.selectLocation = function() {
         console.log("hello")
+        $state.go('sidemenu.map');
 
-        appModalService.show('templates/location.html', 'LocationModalCtrl as vm', {}).then(function(res) {
-            console.log("location ", res.location);
-            if (res != null) {
-                var lat = res.location.geometry.location.lat();
-                var lng = res.location.geometry.location.lng()
-                var arr = [];
-                arr[0] = lat;
-                arr[1] = lng;
-                $scope.final_obj.location = arr;
-                $scope.final_obj.loc_name = res.location.formatted_address;
-            }
-            // if (res != null) {
-            //     $scope.insertLocation = 1;
-            //     $scope.goal.location = res.location;
-            //     $scope.location = res.location.formatted_address;
-            // }
-        })
+        // appModalService.show('templates/location.html', 'LocationModalCtrl as vm', {}).then(function(res) {
+        //     console.log("location ", res.location);
+        //     if (res != null) {
+        //         var lat = res.location.geometry.location.lat();
+        //         var lng = res.location.geometry.location.lng()
+        //         var arr = [];
+        //         arr[0] = lat;
+        //         arr[1] = lng;
+        //         $scope.final_obj.location = arr;
+        //         $scope.final_obj.loc_name = res.location.formatted_address;
+        //     }
+        //     // if (res != null) {
+        //     //     $scope.insertLocation = 1;
+        //     //     $scope.goal.location = res.location;
+        //     //     $scope.location = res.location.formatted_address;
+        //     // }
+        // })
     }
 
     $scope.creatPost = function() {
@@ -911,7 +1018,7 @@ angular.module('app.controllers', [])
     $scope.data = {};
 
     $scope.locationChanged = function(location) {
-        console.log(location)
+        console.log("in location changed", location)
         var geocoder = new google.maps.Geocoder();
         geocoder.geocode({
             address: location
@@ -1097,6 +1204,10 @@ angular.module('app.controllers', [])
         })
 })
 
+.controller('TurnLocationCtrl', ['$scope', function($scope) {
+
+}])
+
 .controller('FoodProfileCtrl', function($scope, localStorageService, Posts, $stateParams, $ionicPopup) {
     // $scope.x = {
     //     src: 'img/waffle.jpg',
@@ -1201,3 +1312,92 @@ angular.module('app.controllers', [])
         });
     };
 })
+
+.controller('MapCtrl', function($scope, $state, $cordovaGeolocation) {
+    console.log("in map ctrl")
+    var options = { timeout: 10000, enableHighAccuracy: true };
+
+    $scope.locationChanged = function(location) {
+        console.log("in location changed", location)
+        var geocoder = new google.maps.Geocoder();
+        geocoder.geocode({
+            address: location
+        }, function(results, status) {
+            if (status == google.maps.GeocoderStatus.OK) {
+                console.log("status", results[0].geometry.location.lat(),  results[0].geometry.location.lng())
+
+
+                var latLng = new google.maps.LatLng(results[0].geometry.location.lat(), results[0].geometry.location.lng());
+
+                var mapOptions = {
+                    center: latLng,
+                    zoom: 15,
+                    mapTypeId: google.maps.MapTypeId.ROADMAP
+                };
+
+                $scope.map = new google.maps.Map(document.getElementById("map"), mapOptions);
+                //vm.location = results[0];
+                //$q.resolve(results);
+            } else {
+                //$q.reject();
+            }
+        });
+    }
+
+
+    $cordovaGeolocation.getCurrentPosition(options).then(function(position) {
+
+        var latLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+
+        var mapOptions = {
+            center: latLng,
+            zoom: 15,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+
+        $scope.map = new google.maps.Map(document.getElementById("map"), mapOptions);
+
+    }, function(error) {
+        console.log("Could not get location");
+    });
+})
+
+// .controller('MapCtrl', function($scope, $ionicLoading) {
+//     console.log("in map ctrl")
+//     function initialize() {
+//         var mapOptions = {
+//             center: new google.maps.LatLng(43.07493, -89.381388),
+//             zoom: 16,
+//             mapTypeId: google.maps.MapTypeId.ROADMAP
+//         };
+//         var map = new google.maps.Map(document.getElementById("map"),
+//             mapOptions);
+
+//         // Stop the side bar from dragging when mousedown/tapdown on the map
+//         google.maps.event.addDomListener(document.getElementById('map'), 'mousedown', function(e) {
+//             e.preventDefault();
+//             return false;
+//         });
+
+//         $scope.map = map;
+//     }
+//     google.maps.event.addDomListener(window, 'load', initialize);
+
+//     $scope.centerOnMe = function() {
+//         if (!$scope.map) {
+//             return;
+//         }
+
+//         $scope.loading = $ionicLoading.show({
+//             content: 'Getting current location...',
+//             showBackdrop: false
+//         });
+
+//         navigator.geolocation.getCurrentPosition(function(pos) {
+//             $scope.map.setCenter(new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude));
+//             $scope.loading.hide();
+//         }, function(error) {
+//             alert('Unable to get location: ' + error.message);
+//         });
+//     };
+// });

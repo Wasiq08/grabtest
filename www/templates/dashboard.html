@@ -39,7 +39,7 @@
                 <i class="ion-thumbsup"></i>
             </div> -->
         </div>
-        <ion-infinite-scroll on-infinite="getDashboardFeed()" distance="1%" ng-if="noMoreFeedContent"></ion-infinite-scroll>
+        <ion-infinite-scroll on-infinite="getDashboardFeed()" distance="1%" ng-if="!noMoreFeedContent"></ion-infinite-scroll>
     </ion-content>
     <ion-footer-bar>
         <div class="tabs tabs-icon-only">
