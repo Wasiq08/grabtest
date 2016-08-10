@@ -536,11 +536,11 @@ angular.module('app.controllers', [])
 
 .controller('dashboardCtrl', function($rootScope, $ionicPopup, $ionicHistory, $ionicPopover, ImageService, $ionicLoading, localStorageService, $scope, Posts, $cordovaFileTransfer, $cordovaCamera, $state, $ionicModal, $cordovaGeolocation) {
     console.log("in dashboard ctrl");
-    if (localStorageService.get('loggedInUser')) {
+    // if (localStorageService.get('loggedInUser')) {
 
-    } else {
-        $state.go('login')
-    }
+    // } else {
+    //     $state.go('login')
+    // }
 
     // $scope.feeds = [{
     //     user: {
@@ -939,25 +939,25 @@ angular.module('app.controllers', [])
 
     $scope.selectLocation = function() {
         console.log("hello")
-        $state.go('sidemenu.map');
+            //$state.go('sidemenu.map');
 
-        // appModalService.show('templates/location.html', 'LocationModalCtrl as vm', {}).then(function(res) {
-        //     console.log("location ", res.location);
-        //     if (res != null) {
-        //         var lat = res.location.geometry.location.lat();
-        //         var lng = res.location.geometry.location.lng()
-        //         var arr = [];
-        //         arr[0] = lat;
-        //         arr[1] = lng;
-        //         $scope.final_obj.location = arr;
-        //         $scope.final_obj.loc_name = res.location.formatted_address;
-        //     }
-        //     // if (res != null) {
-        //     //     $scope.insertLocation = 1;
-        //     //     $scope.goal.location = res.location;
-        //     //     $scope.location = res.location.formatted_address;
-        //     // }
-        // })
+        appModalService.show('templates/map.html', 'MapCtrl as vm', {}).then(function(res) {
+            console.log("location ", res.location);
+            if (res != null) {
+                var lat = res.location.geometry.location.lat();
+                var lng = res.location.geometry.location.lng()
+                var arr = [];
+                arr[0] = lat;
+                arr[1] = lng;
+                $scope.final_obj.location = arr;
+                $scope.final_obj.loc_name = res.location.formatted_address;
+            }
+            // if (res != null) {
+            //     $scope.insertLocation = 1;
+            //     $scope.goal.location = res.location;
+            //     $scope.location = res.location.formatted_address;
+            // }
+        })
     }
 
     $scope.creatPost = function() {
@@ -1313,8 +1313,11 @@ angular.module('app.controllers', [])
     };
 })
 
-.controller('MapCtrl', function($scope, $state, $cordovaGeolocation) {
+.controller('MapCtrl', function($scope, $state, $cordovaGeolocation, $ionicPopup) {
     console.log("in map ctrl")
+
+    var vm = this;
+
     var options = { timeout: 10000, enableHighAccuracy: true };
 
     $scope.locationChanged = function(location) {
@@ -1324,7 +1327,7 @@ angular.module('app.controllers', [])
             address: location
         }, function(results, status) {
             if (status == google.maps.GeocoderStatus.OK) {
-                console.log("status", results[0].geometry.location.lat(),  results[0].geometry.location.lng())
+                console.log("status", results[0].geometry.location.lat(), results[0].geometry.location.lng())
 
 
                 var latLng = new google.maps.LatLng(results[0].geometry.location.lat(), results[0].geometry.location.lng());
@@ -1355,11 +1358,122 @@ angular.module('app.controllers', [])
             mapTypeId: google.maps.MapTypeId.ROADMAP
         };
 
-        $scope.map = new google.maps.Map(document.getElementById("map"), mapOptions);
+        var geocoder = new google.maps.Geocoder();
+        geocoder.geocode({
+            'latLng': latLng
+        }, function(results, status) {
+            if (status == google.maps.GeocoderStatus.OK) {
+                console.log("status", results[0].geometry.location.lat(), results[0].geometry.location.lng())
 
+                vm.location = results[0];
+                document.getElementById('pac-input').text = "ABC"
+                $ionicPopup.alert({
+                    title: 'Your location is '+ vm.location.formatted_address,
+                    scope: $scope
+                });
+                // var latLng = new google.maps.LatLng(results[0].geometry.location.lat(), results[0].geometry.location.lng());
+
+                // var mapOptions = {
+                //     center: latLng,
+                //     zoom: 15,
+                //     mapTypeId: google.maps.MapTypeId.ROADMAP
+                // };
+
+                // $scope.map = new google.maps.Map(document.getElementById("map"), mapOptions);
+                //vm.location = results[0];
+                //$q.resolve(results);
+            } else {
+                //$q.reject();
+            }
+        });
+
+        $scope.map = new google.maps.Map(document.getElementById("map"), mapOptions);
+        var marker = new google.maps.Marker({
+            position: latLng,
+            map: $scope.map,
+            title: 'Hello World!'
+        });
+        $scope.map.addListener('bounds_changed', function() {
+            searchBox.setBounds($scope.map.getBounds());
+        });
+
+        $scope.map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+        var input = document.getElementById('pac-input');
+        var searchBox = new google.maps.places.SearchBox(input);
+        var markers = [];
+
+        searchBox.addListener('places_changed', function() {
+            var places = searchBox.getPlaces();
+            console.log("places", places)
+            var latLng = new google.maps.LatLng(places[0].geometry.location.lat(), places[0].geometry.location.lng());
+
+            // var mapOptions = {
+            //     center: latLng,
+            //     zoom: 15,
+            //     mapTypeId: google.maps.MapTypeId.ROADMAP
+            // };
+
+            // $scope.map = new google.maps.Map(document.getElementById("map"), mapOptions);
+            // if (places.length == 0) {
+            //     return;
+            // }
+
+            // Clear out the old markers.
+            // markers.forEach(function(marker) {
+            //     marker.setMap(null);
+            // });
+            markers = [];
+
+            // For each place, get the icon, name and location.
+            var bounds = new google.maps.LatLngBounds();
+            places.forEach(function(place) {
+                if (!place.geometry) {
+                    console.log("Returned place contains no geometry");
+                    return;
+                }
+                var icon = {
+                    url: place.icon,
+                    size: new google.maps.Size(71, 71),
+                    origin: new google.maps.Point(0, 0),
+                    anchor: new google.maps.Point(17, 34),
+                    scaledSize: new google.maps.Size(25, 25)
+                };
+
+                // Create a marker for each place.
+                markers.push(new google.maps.Marker({
+                    map: map,
+                    icon: icon,
+                    title: place.name,
+                    position: place.geometry.location
+                }));
+
+                if (place.geometry.viewport) {
+                    // Only geocodes have viewport.
+                    bounds.union(place.geometry.viewport);
+                } else {
+                    bounds.extend(place.geometry.location);
+                }
+            });
+            $scope.map.fitBounds(bounds);
+        });
     }, function(error) {
         console.log("Could not get location");
     });
+
+
+    vm.confirm = function(category) {
+        $scope.closeModal(category);
+    };
+
+    vm.cancel = function() {
+        $scope.closeModal(null);
+    };
+
+
+    // Bias the SearchBox results towards current map's viewport.
+
+
+
 })
 
 // .controller('MapCtrl', function($scope, $ionicLoading) {

@@ -1,13 +1,18 @@
-<ion-view title="Food Monger">
-    <ion-nav-buttons side="left">
+<div class="modal">
+    <ion-header-bar class="bar-positive">
         <div class="buttons">
-            <button class="button button-icon ion-ios-arrow-back" style="color: white;" nav-direction="back" ng-click="$ionicGoBack(); "></button>
+            <button class="button button-icon lg-icon-cross-small lg-l-float" ng-click="closeModal()"></button>
         </div>
-    </ion-nav-buttons>
+        <h1 class="title">Location</h1>
+        <div class="buttons">
+            <button class="button button-clear lg-l-float" ng-click="vm.confirm(vm)">Done</button>
+        </div>
+    </ion-header-bar>
     <ion-content>
         <div class="phl">
-            <ion-google-place placeholder="Your address" ng-model="data.address" required name="address" current-location="true" location-changed="locationChanged" />
+            <input id="pac-input" class="controls" type="text" placeholder="Search Box" ng-model="vm.location.formatted_address">
+            <!--    <ion-google-place placeholder="Your address" ng-model="data.address" required name="address" current-location="true" location-changed="locationChanged" /> -->
         </div>
-        <div id="map" data-tap-disabled="true"></div>
+        <div id="map"></div>
     </ion-content>
-</ion-view>
+</div>

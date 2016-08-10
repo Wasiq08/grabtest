@@ -135,8 +135,8 @@ angular.module('app.routes', [])
 
 
 
-    //$urlRouterProvider.otherwise('/main')
-    $urlRouterProvider.otherwise('/sidemenu/dashboard')
+    $urlRouterProvider.otherwise('/main')
+    //$urlRouterProvider.otherwise('/sidemenu/dashboard')
 
 
 

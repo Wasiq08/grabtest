@@ -30,6 +30,7 @@ placeTools.directive('ionGooglePlace', [
                     var searchInputElement = angular.element(element.find('input'));
 
                     scope.selectLocation = function(location) {
+                        console.log("in ion directive ", location)
                         scope.dropDownActive = false;
                         scope.searchQuery = location.description;
                         if (scope.locationChanged) {
