@@ -1,0 +1,13 @@
+<ion-view title="Food Monger">
+    <ion-nav-buttons side="left">
+        <div class="buttons">
+            <button class="button button-icon ion-ios-arrow-back" style="color: white;" nav-direction="back" ng-click="$ionicGoBack(); "></button>
+        </div>
+    </ion-nav-buttons>
+    <ion-content>
+        <div class="phl">
+            <ion-google-place placeholder="Your address" ng-model="data.address" required name="address" current-location="true" location-changed="locationChanged" />
+        </div>
+        <div id="map" data-tap-disabled="true"></div>
+    </ion-content>
+</ion-view>

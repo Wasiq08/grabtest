@@ -3,19 +3,23 @@
         <div class="ft-32" style="color: #ff6f29; text-align: center; margin-top: 50px;">
             <b>Food Monger!</b>
         </div>
-        <div class="ft-16" style="color: white; text-align: center;margin-top: 10px;">
-            <b>Upload Image</b>
+        <div class="ft-16" style="color: white; text-align: center;margin-top: 10px; width:80%; margin-left:auto; margin-right:auto;">
+            Choose how you appears across FoodMonger by uploading a profile picture.
         </div>
-        <div style="position: relative;">
-            <div style="width: 80%; height: 200px; margin-top: 5%; background-color: #233a48; position: absolute; left:10%;">
-                <div ng-if="isLoading" class="loader"></div>
-                <div ng-if="!isLoading" style="width: 150px; height: 150px; margin-top: 25px; margin-left: 15px; ">
+        <div style="position: relative; margin-top:5px;">
+            <div style="width: 80%; background-color: #f9f9f9; margin-right:auto; margin-left:auto; padding-bottom:10px;padding-top:10px;">
+                <div ng-click="addImage()"  style="width: 150px; height: 150px; margin-top: 25px;margin-left:auto; margin-right:auto;">
                     <img ng-src="{{image.src}}" class="fd-img fd-img-br">
                 </div>
-                <div ng-if="!isLoading" style="color: white; background-color: #ff6f29; margin-top:25px;" ng-click="next()">
-                    <p class="ptm pbm ft-14" style="text-align: center;"><b>Next</b></p>
+                <div ng-if="isLoading" class="loader loader-profile"></div>
+                <div class="profile-name ft-20" style="color:black; margin-top:10px;">
+                    {{$root.user.name}}
                 </div>
-                <div ng-if="!isLoading" style="color: white; background-color: #1f313d; margin-left: 180px; margin-top:-175px;" ng-click="addImage()">
+                <div style="text-align:center; margin-top:25px; color:rgba(39, 62, 84, 0.82);" class="ft-16" ng-click="addImage()">Upload</div>
+                <div style="color: white; background-color: #ff6f29; margin-bottom:25px;margin-top: 5px; width:60%;margin-left:auto; margin-right:auto;" ng-click="next()">
+                    <p class="pts pbs ft-14" style="text-align: center;"><b>Next</b></p>
+                </div>
+                <div ng-hide="true" ng-if="!isLoading" style="color: white; background-color: #1f313d; margin-left: 180px; " ng-click="addImage()">
                     <p class="pts pbs ft-14" style="text-align: center;"><b>Upload</b></p>
                 </div>
             </div>

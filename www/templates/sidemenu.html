@@ -8,7 +8,7 @@
     <ion-side-menu side="left">
         <ion-content class="fd-bg">
             <div class="profile-sidemenu">
-                <img ng-src="{{$root.user.profile[0].medium}}" class="fd-img fd-img-br">
+                <img ng-src="{{$root.user.media[0].medium ||$root.defaultUser}}" class="fd-img fd-img-br">
             </div>
             <div class="fd-m-align ptl ft-18" style="color: white;">
                 {{$root.user.name}}
