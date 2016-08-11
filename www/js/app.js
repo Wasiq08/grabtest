@@ -24,7 +24,7 @@ angular.module('app', ['ionic', 'ngCordova', 'ionic-datepicker', 'ngGeolocation'
     });
 })
 
-.run(function($rootScope, $state, localStorageService, User, Posts, $ionicSideMenuDelegate, $ionicLoading) {
+.run(function($rootScope, $state, localStorageService, User, Posts, $ionicSideMenuDelegate, $ionicLoading, $ionicActionSheet) {
 
     $rootScope.navigateState = function(state) {
         console.log("state is", state)
@@ -99,6 +99,41 @@ angular.module('app', ['ionic', 'ngCordova', 'ionic-datepicker', 'ngGeolocation'
 
                 })
         }
+    }
+
+    $rootScope.showActionSheet = function(uid, postid, i) {
+        var _id = localStorageService.get('loggedInUser')._id;
+        var buttons = []
+        if (_id == uid) {
+            buttons.push({ text: '<i class="icon ion-ios-trash"></i> Delete' })
+        } else {
+            buttons.push({ text: '<i class="icon ion-flag"></i> Report  ' })
+        }
+
+        var actionSheet = $ionicActionSheet.show({
+            titleText: 'Actions',
+            buttons: buttons,
+            cancelText: '<i class="icon rd-txt lg-icon-cross-small"></i> <span class="rd-txt">Close</span>',
+            cancel: function() {},
+            buttonClicked: function(index) {
+                if (index == 0) {
+
+                    if (_id == uid) {
+                        console.log("in if")
+                        $ionicLoading.show({
+                            template: 'Deleting Post'
+                        })
+                        Posts.deletePost(postid).success(function(res) {
+                            $rootScope.$broadcast('POST_DELETED', { ind: i })
+                            $ionicLoading.hide();
+                        })
+                    }
+                }
+                actionSheet();
+            }
+
+        })
+
     }
 
 

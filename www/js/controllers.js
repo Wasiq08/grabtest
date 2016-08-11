@@ -781,6 +781,11 @@ angular.module('app.controllers', [])
         $scope.feeds.unshift(args.post)
     })
 
+    $rootScope.$on('POST_DELETED', function(event, args) {
+        console.log("index in on", args.ind)
+        $scope.feeds.splice(args.ind, 1)
+    })
+
     $scope.getpicture = function() {
         var options = {
             quality: 80,
@@ -969,7 +974,7 @@ angular.module('app.controllers', [])
                 $ionicHistory.nextViewOptions({
                     disableBack: true
                 });
-                //$rootScope.$broadcast('POST_CREATED', {post: result.data});
+                $rootScope.$broadcast('POST_CREATED', { post: result.data });
                 $state.go('sidemenu.dashboard');
             })
             .error(function(err) {
@@ -1313,10 +1318,162 @@ angular.module('app.controllers', [])
     };
 })
 
-.controller('MapCtrl', function($scope, $state, $cordovaGeolocation, $ionicPopup) {
+.controller('MapCtrl', function($scope, $ionicPlatform, $state, $cordovaGeolocation, $ionicPopup, $ionicLoading) {
     console.log("in map ctrl")
 
     var vm = this;
+    var getCurrentLocation = function() {
+        $ionicLoading.show({
+            template: 'Please Wait!'
+        })
+        $cordovaGeolocation.getCurrentPosition(options).then(function(position) {
+
+            var latLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+
+            var mapOptions = {
+                center: latLng,
+                zoom: 15,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            };
+
+            var geocoder = new google.maps.Geocoder();
+            geocoder.geocode({
+                'latLng': latLng
+            }, function(results, status) {
+                if (status == google.maps.GeocoderStatus.OK) {
+                    console.log("status", results[0].geometry.location.lat(), results[0].geometry.location.lng())
+
+                    vm.location = results[0];
+                    document.getElementById('pac-input').text = "ABC"
+                    $ionicLoading.hide();
+                    $ionicPopup.alert({
+                        title: 'Your location is ' + vm.location.formatted_address,
+                        scope: $scope
+                    });
+                    // var latLng = new google.maps.LatLng(results[0].geometry.location.lat(), results[0].geometry.location.lng());
+
+                    // var mapOptions = {
+                    //     center: latLng,
+                    //     zoom: 15,
+                    //     mapTypeId: google.maps.MapTypeId.ROADMAP
+                    // };
+
+                    // $scope.map = new google.maps.Map(document.getElementById("map"), mapOptions);
+                    //vm.location = results[0];
+                    //$q.resolve(results);
+                } else {
+                    //$q.reject();
+                }
+            });
+
+            $scope.map = new google.maps.Map(document.getElementById("map"), mapOptions);
+            var marker = new google.maps.Marker({
+                position: latLng,
+                map: $scope.map,
+                title: 'Hello World!'
+            });
+            $scope.map.addListener('bounds_changed', function() {
+                searchBox.setBounds($scope.map.getBounds());
+            });
+
+            $scope.map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+            var input = document.getElementById('pac-input');
+            var searchBox = new google.maps.places.SearchBox(input);
+            var markers = [];
+
+            searchBox.addListener('places_changed', function() {
+                var places = searchBox.getPlaces();
+                console.log("places", places)
+                var latLng = new google.maps.LatLng(places[0].geometry.location.lat(), places[0].geometry.location.lng());
+
+                // var mapOptions = {
+                //     center: latLng,
+                //     zoom: 15,
+                //     mapTypeId: google.maps.MapTypeId.ROADMAP
+                // };
+
+                // $scope.map = new google.maps.Map(document.getElementById("map"), mapOptions);
+                // if (places.length == 0) {
+                //     return;
+                // }
+
+                // Clear out the old markers.
+                // markers.forEach(function(marker) {
+                //     marker.setMap(null);
+                // });
+                markers = [];
+
+                // For each place, get the icon, name and location.
+                var bounds = new google.maps.LatLngBounds();
+                places.forEach(function(place) {
+                    if (!place.geometry) {
+                        console.log("Returned place contains no geometry");
+                        return;
+                    }
+                    var icon = {
+                        url: place.icon,
+                        size: new google.maps.Size(71, 71),
+                        origin: new google.maps.Point(0, 0),
+                        anchor: new google.maps.Point(17, 34),
+                        scaledSize: new google.maps.Size(25, 25)
+                    };
+
+                    // Create a marker for each place.
+                    markers.push(new google.maps.Marker({
+                        map: map,
+                        icon: icon,
+                        title: place.name,
+                        position: place.geometry.location
+                    }));
+
+                    if (place.geometry.viewport) {
+                        // Only geocodes have viewport.
+                        bounds.union(place.geometry.viewport);
+                    } else {
+                        bounds.extend(place.geometry.location);
+                    }
+                });
+                $scope.map.fitBounds(bounds);
+            });
+        }, function(error) {
+            $ionicLoading.hide();
+            $ionicPopup.alert({
+                title: 'Could not get your location. Try again!',
+                scope: $scope
+            });
+            console.log("Could not get location");
+        });
+    }
+
+    cordova.plugins.diagnostic.isLocationEnabled(function(res) {
+        console.log(res)
+        if (!res) {
+            var confirmPopup = $ionicPopup.confirm({
+                title: 'Your device GPS is off. Do you want turn on your GPS settings?'
+            });
+
+            confirmPopup.then(function(res) {
+                if (res) {
+
+                    cordova.plugins.diagnostic.switchToLocationSettings();
+                } else {
+                    console.log('You are not sure');
+                }
+            });
+            $ionicPlatform.on('pause', function(res) {
+                console.log("in pause callback", res)
+            })
+            $ionicPlatform.on('resume', function(res) {
+                console.log("in resume callback", res)
+                getCurrentLocation();
+            })
+
+        } else {
+            getCurrentLocation();
+        }
+    }, function(err) {
+
+    });
 
     var options = { timeout: 10000, enableHighAccuracy: true };
 
@@ -1348,117 +1505,7 @@ angular.module('app.controllers', [])
     }
 
 
-    $cordovaGeolocation.getCurrentPosition(options).then(function(position) {
 
-        var latLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-
-        var mapOptions = {
-            center: latLng,
-            zoom: 15,
-            mapTypeId: google.maps.MapTypeId.ROADMAP
-        };
-
-        var geocoder = new google.maps.Geocoder();
-        geocoder.geocode({
-            'latLng': latLng
-        }, function(results, status) {
-            if (status == google.maps.GeocoderStatus.OK) {
-                console.log("status", results[0].geometry.location.lat(), results[0].geometry.location.lng())
-
-                vm.location = results[0];
-                document.getElementById('pac-input').text = "ABC"
-                $ionicPopup.alert({
-                    title: 'Your location is '+ vm.location.formatted_address,
-                    scope: $scope
-                });
-                // var latLng = new google.maps.LatLng(results[0].geometry.location.lat(), results[0].geometry.location.lng());
-
-                // var mapOptions = {
-                //     center: latLng,
-                //     zoom: 15,
-                //     mapTypeId: google.maps.MapTypeId.ROADMAP
-                // };
-
-                // $scope.map = new google.maps.Map(document.getElementById("map"), mapOptions);
-                //vm.location = results[0];
-                //$q.resolve(results);
-            } else {
-                //$q.reject();
-            }
-        });
-
-        $scope.map = new google.maps.Map(document.getElementById("map"), mapOptions);
-        var marker = new google.maps.Marker({
-            position: latLng,
-            map: $scope.map,
-            title: 'Hello World!'
-        });
-        $scope.map.addListener('bounds_changed', function() {
-            searchBox.setBounds($scope.map.getBounds());
-        });
-
-        $scope.map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
-        var input = document.getElementById('pac-input');
-        var searchBox = new google.maps.places.SearchBox(input);
-        var markers = [];
-
-        searchBox.addListener('places_changed', function() {
-            var places = searchBox.getPlaces();
-            console.log("places", places)
-            var latLng = new google.maps.LatLng(places[0].geometry.location.lat(), places[0].geometry.location.lng());
-
-            // var mapOptions = {
-            //     center: latLng,
-            //     zoom: 15,
-            //     mapTypeId: google.maps.MapTypeId.ROADMAP
-            // };
-
-            // $scope.map = new google.maps.Map(document.getElementById("map"), mapOptions);
-            // if (places.length == 0) {
-            //     return;
-            // }
-
-            // Clear out the old markers.
-            // markers.forEach(function(marker) {
-            //     marker.setMap(null);
-            // });
-            markers = [];
-
-            // For each place, get the icon, name and location.
-            var bounds = new google.maps.LatLngBounds();
-            places.forEach(function(place) {
-                if (!place.geometry) {
-                    console.log("Returned place contains no geometry");
-                    return;
-                }
-                var icon = {
-                    url: place.icon,
-                    size: new google.maps.Size(71, 71),
-                    origin: new google.maps.Point(0, 0),
-                    anchor: new google.maps.Point(17, 34),
-                    scaledSize: new google.maps.Size(25, 25)
-                };
-
-                // Create a marker for each place.
-                markers.push(new google.maps.Marker({
-                    map: map,
-                    icon: icon,
-                    title: place.name,
-                    position: place.geometry.location
-                }));
-
-                if (place.geometry.viewport) {
-                    // Only geocodes have viewport.
-                    bounds.union(place.geometry.viewport);
-                } else {
-                    bounds.extend(place.geometry.location);
-                }
-            });
-            $scope.map.fitBounds(bounds);
-        });
-    }, function(error) {
-        console.log("Could not get location");
-    });
 
 
     vm.confirm = function(category) {

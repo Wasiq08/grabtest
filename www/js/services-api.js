@@ -116,6 +116,12 @@ angular.module('CoreApi', ['CoreApiUtilities'])
         return httpService.$http.delete(url, config);
     }
 
+    this.deletePost = function(postid) {
+        var config = httpService.Utils.getHeader();
+        var url = httpService.Utils.buildUrl(new Array('posts', postid));
+        return httpService.$http.delete(url, config);
+    }
+
     this.addComment = function(params, postid) {
         var config = httpService.Utils.getHeader();
         var url = httpService.Utils.buildUrl(new Array('posts', postid, 'comments'));
