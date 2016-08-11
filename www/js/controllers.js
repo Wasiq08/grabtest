@@ -850,6 +850,15 @@ angular.module('app.controllers', [])
     $scope.isloading = true;
     $scope.loadedvalue = 0.0;
     var imageData = $rootScope.postimagedata;
+
+
+    /////////////////VISION API
+    console.log("VISSSSSSSSION API");
+    var api_key = 'AIzaSyDtOFOdgBAO9Un2IAsdIDugwuHDO4Hqo10';
+
+    var _visionImage = {};
+    _visionImage.detection_type = 'LABEL_DETECTION';
+
     //$scope.final_obj.location = {"lon":51.12076493195686,"lat":-113.98040771484375};
     try {
         var options = {
@@ -866,8 +875,64 @@ angular.module('app.controllers', [])
             .then(function(res) {
                 $scope.finalImage = JSON.parse(res.response);
                 $scope.imageData = $scope.finalImage.data.file[0].medium;
+                _visionImage.current_image = $scope.imageData;
                 $scope.isloading = false;
                 $scope.final_obj.post_image_id = $scope.finalImage.data.fileId;
+
+
+
+                var vision_api_json = {
+                    "requests": [{
+                        "image": {
+                            "content": _visionImage.current_image
+                        },
+                        "features": [{
+                            "type": _visionImage.detection_type,
+                            "maxResults": 1
+                        }]
+                    }]
+                };
+
+                var file_contents = JSON.stringify(vision_api_json);
+
+
+
+
+                $cordovaFile.writeFile(
+                    cordova.file.applicationStorageDirectory,
+                    'file.json',
+                    file_contents,
+                    true
+                ).then(function(result) {
+
+                    var headers = {
+                        'Content-Type': 'application/json'
+                    };
+
+                    options.headers = headers;
+
+                    var server = 'https://vision.googleapis.com/v1/images:annotate?key=' + 'AIzaSyDtOFOdgBAO9Un2IAsdIDugwuHDO4Hqo10';
+                    var filePath = cordova.file.applicationStorageDirectory + 'file.json';
+
+                    $cordovaFileTransfer.upload(server, filePath, options, true)
+                        .then(function(result) {
+                            console.log("MERA VISION RESULT",result);
+                            var res = JSON.parse(result.response);
+                            var key = _visionImage.detection_types[_visionImage.detection_type] + 'Annotations';
+
+                            _visionImage.image_description = res.responses[0][key][0].description;
+                        }, function(err) {
+                            alert('An error occurred while uploading the file');
+                        });
+                }, function(err) {
+                    alert('An error occurred while trying to write the file');
+                });
+
+
+
+
+
+
             }, function(err) {
                 console.log(err)
                 $scope.isloading = false;
@@ -1324,7 +1389,7 @@ angular.module('app.controllers', [])
             address: location
         }, function(results, status) {
             if (status == google.maps.GeocoderStatus.OK) {
-                console.log("status", results[0].geometry.location.lat(),  results[0].geometry.location.lng())
+                console.log("status", results[0].geometry.location.lat(), results[0].geometry.location.lng())
 
 
                 var latLng = new google.maps.LatLng(results[0].geometry.location.lat(), results[0].geometry.location.lng());
