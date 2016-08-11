@@ -27,7 +27,7 @@
             </div>
         </div>
         <div on-tap="selectCategoryOption()" class="ptm plm prm pbm" style="margin-left: 5%;width: 90%;border-bottom-style: solid; border-bottom-width: thin; border-bottom-color:  rgba(0,0,0,0.1) ;">
-            <p><b><i class="ion-pound"></i><span ng-if="!hashtags" class="plm">Add Tags</span><span ng-if="hashtags" class="fd-chips" ng-repeat="tag in hashtags" style="margin: 0px 0px 0px 10px;">{{tag}} </span></b></p>
+            <p><b><i class="ion-pound"></i><span ng-if="!hashtags" class="plm">Add Tags</span><span ng-if="hashtags" class="fd-chips" ng-repeat="tag in hashtags" style="margin: 0px 0px 0px 10px;">{{tag.desc || tag }} <span ng-click="removeTags($index)"><i class="ion-close"></i></span> </span></b></p>
         </div>
         <div on-tap="selectLocation()" class="ptm plm prm pbm" style="margin-left: 5%;width: 90%;border-bottom-style: solid; border-bottom-width: thin; border-bottom-color: rgba(0,0,0,0.1) ;">
             <p><b><i class="ion-ios-location"></i><span class="plm">{{final_obj.loc_name}}</span></b></p>

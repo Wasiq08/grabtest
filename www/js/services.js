@@ -22,6 +22,7 @@ angular.module('app.services', [])
 
 .service('App', function($q, UserService, UserDataServices) {
     this.init = function() {
+        console.log("in init")
         var deferred = $q.defer();
         $timeout(function(){
         	if (localStorageService.get('loggedInUser')) {

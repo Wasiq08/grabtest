@@ -25,7 +25,7 @@
                 <a on-tap="navigateToFoodPost(x.feed._id)">
                     <p class="ft-18 ptx"><b>{{x.feed.remark}}</b></p>
                 </a>
-                <p class="pts"><span class="prs" ng-repeat="tag in x.feed.tag">{{tag}}</span></p>
+                <p class="pts"><span class="prs" ng-repeat="tag in x.feed.tag">#{{tag.desc || tag}}</span></p>
                 <p class="pts"><i ng-if="x.feed.category != 'Select Category'" class="ion-soup-can-outline"></i><span ng-if="x.feed.category != 'Select Category'" class="plx prm">{{x.feed.category}}</span> <i class="ion-clock"></i><span class="plx prm">{{x.feed.createdTimeStamp | readableTime}}</span><i class="ion-ios-location"></i><span class="plx">{{x.feed.loc_name}}</span></p>
             </div>
             <div class="pll ptm pbm ft-18 border-style-top border-style-bottom">

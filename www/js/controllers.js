@@ -534,7 +534,7 @@ angular.module('app.controllers', [])
     }
 })
 
-.controller('dashboardCtrl', function($rootScope, $ionicPopup, $ionicHistory, $ionicPopover, ImageService, $ionicLoading, localStorageService, $scope, Posts, $cordovaFileTransfer, $cordovaCamera, $state, $ionicModal, $cordovaGeolocation) {
+.controller('dashboardCtrl', function($rootScope, $cordovaFile, $ionicPopup, $ionicHistory, $ionicPopover, ImageService, $ionicLoading, localStorageService, $scope, Posts, $cordovaFileTransfer, $cordovaCamera, $state, $ionicModal, $cordovaGeolocation) {
     console.log("in dashboard ctrl");
     // if (localStorageService.get('loggedInUser')) {
 
@@ -789,7 +789,7 @@ angular.module('app.controllers', [])
     $scope.getpicture = function() {
         var options = {
             quality: 80,
-            destinationType: Camera.DestinationType.FILE_URI,
+            destinationType: Camera.DestinationType.DATA_URL,
             sourceType: Camera.PictureSourceType.CAMERA,
             allowEdit: false,
             encodingType: Camera.EncodingType.JPEG,
@@ -797,13 +797,72 @@ angular.module('app.controllers', [])
             saveToPhotoAlbum: false
         };
 
-        $cordovaCamera.getPicture(options).then(function(imageData) {
-            console.log(imageData)
+        $cordovaCamera.getPicture(options).then(function(imagedata) {
+
+            $scope.imageData = "data:image/jpeg;base64," + imagedata;
+            // var me = {};
+            // me.current_image = "data:image/jpeg;base64," + imagedata;
+            // me.detection_type = 'LABEL_DETECTION';
+
+            // me.detection_types = {
+            //     LABEL_DETECTION: 'label',
+            //     TEXT_DETECTION: 'text',
+            //     LOGO_DETECTION: 'logo',
+            //     LANDMARK_DETECTION: 'landmark'
+            // };
+
+            // var api_key = 'AIzaSyDtOFOdgBAO9Un2IAsdIDugwuHDO4Hqo10';
+            // var vision_api_json = {
+            //     "requests": [{
+            //         "image": {
+            //             "content": imagedata
+            //         },
+            //         "features": [{
+            //             "type": me.detection_type,
+            //             "maxResults": 10
+            //         }]
+            //     }]
+            // };
+
+            // var file_contents = JSON.stringify(vision_api_json);
+
+            // $cordovaFile.writeFile(
+            //     cordova.file.applicationStorageDirectory,
+            //     'file.json',
+            //     file_contents,
+            //     true
+            // ).then(function(result) {
+
+            //     var headers = {
+            //         'Content-Type': 'application/json'
+            //     };
+
+            //     options.headers = headers;
+
+            //     var server = 'https://vision.googleapis.com/v1/images:annotate?key=' + api_key;
+            //     var filePath = cordova.file.applicationStorageDirectory + 'file.json';
+
+            //     $cordovaFileTransfer.upload(server, filePath, options, true)
+            //         .then(function(result) {
+
+            //             var res = JSON.parse(result.response);
+            //             var key = me.detection_types[me.detection_type] + 'Annotations';
+            //             //$rootScope.postImageTags = res.responses[0].labelAnnotations;
+            //             $rootScope.$broadcast('Post_image_tags', {tags:  res.responses[0].labelAnnotations })
+            //             console.log("me result", res)
+            //             console.log("me result key", key)
+            //             //me.image_description = res.responses[0][key][0].description;
+            //         }, function(err) {
+            //             console.log('An error occurred while uploading the file', JSON.stringify(err));
+            //         });
+            // }, function(err) {
+            //     console.log('An error occurred while trying to write the file');
+            // });
+
+
+            //$rootScope.postimagedata = imageData;
+            $rootScope.postimagedata = "data:image/jpeg;base64," + imagedata;
             $state.go('sidemenu.createpost');
-
-            $rootScope.postimagedata = imageData;
-            //= "data:image/jpeg;base64," + imageData;
-
 
             //var image = document.getElementById('myImage');
             //image.src = "data:image/jpeg;base64," + imageData;
@@ -849,7 +908,7 @@ angular.module('app.controllers', [])
 
 })
 
-.controller('CreatePostCtrl', function($scope, $cordovaFileTransfer, localStorageService, appModalService, Posts, $rootScope, ImageService, $cordovaGeolocation, $ionicHistory, $state) {
+.controller('CreatePostCtrl', function($scope, $cordovaFile, $cordovaFileTransfer, localStorageService, appModalService, Posts, $rootScope, ImageService, $cordovaGeolocation, $ionicHistory, $state) {
     $scope.imgobj = ImageService.getImage();
     $scope.final_obj = {};
     $scope.isloading = true;
@@ -873,6 +932,12 @@ angular.module('app.controllers', [])
                 $scope.imageData = $scope.finalImage.data.file[0].medium;
                 $scope.isloading = false;
                 $scope.final_obj.post_image_id = $scope.finalImage.data.fileId;
+                Posts.getSuggestedTags($scope.final_obj.post_image_id).success(function(result) {
+                    console.log(result)
+                    $scope.final_obj.tag = result.data;
+                    $scope.hashtags = result.data;
+                })
+
             }, function(err) {
                 console.log(err)
                 $scope.isloading = false;
@@ -917,6 +982,15 @@ angular.module('app.controllers', [])
 
     }
 
+    $rootScope.$on('Post_image_tags', function(event, args) {
+        $scope.final_obj.tag = args.tags;
+        $scope.hashtags = args.tags;
+    })
+
+    $scope.removeTags = function(i) {
+        $scope.hashtags.splice(i, 1);
+        $scope.final_obj.tag.splice(i, 1);
+    }
 
     $scope.selectCategory = function() {
         appModalService.show('templates/partials/category.html', 'SelectCategoryCtrl as vm', {}).then(function(res) {
@@ -1102,9 +1176,9 @@ angular.module('app.controllers', [])
         currentVal = currentVal.replace(/(\s+)/ig, ' ');
         currentVal = currentVal.replace(/(\s)/ig, '-');
         currentVal = currentVal.replace('#', '');
-        if ($scope.hashtags.indexOf("#" + currentVal) == -1) {
-            $scope.hashtags.push("#" + currentVal);
-            vm.hashtags.push("#" + currentVal);
+        if ($scope.hashtags.indexOf(currentVal) == -1) {
+            $scope.hashtags.push(currentVal);
+            vm.hashtags.push(currentVal);
         }
 
     }
