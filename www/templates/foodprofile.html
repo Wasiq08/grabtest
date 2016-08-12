@@ -10,7 +10,10 @@
         </div>
     </ion-nav-buttons>
     <ion-content class="has-header has-footer fd-bg">
-        <div style="width: 100%; position: relative;  background-color: rgba(255,255,255, 0.96);">
+        <div ng-if="isLoading" style="width:100%;">
+            <ion-spinner style="margin-left:47%;" icon="ios"></ion-spinner>
+        </div>
+        <div ng-if="!isLoading" style="width: 100%; position: relative;  background-color: rgba(255,255,255, 0.96);">
             <div style="width: 100%; height: 200px;">
                 <img ng-src="{{post.media[0].medium}}" class="fd-img">
             </div>
@@ -40,9 +43,9 @@
     </ion-content>
     <ion-footer-bar class="custom-fd-bar fd-br-top sb-bg">
         <div style="width:100%;">
-            <textarea placeholder="Type your comment" style="width:95%;    padding: 12px 0px 0px 5px;" row="1" ng-model="params.text"></textarea>
+            <textarea placeholder="Type your comment" style="width:95%;    padding: 12px 0px 0px 5px;" row="1" ng-focus="focus==true"  ng-model="params.text" ng-blur="focus=false"></textarea>
         </div>
-        <div on-tap="comment()" style="float: right; padding-top:5px; padding-right:10px;" class="ft-32">
+        <div ng-if="focus" on-tap="comment()" style="float: right; padding-top:5px; padding-right:10px;" class="ft-32">
             <i class="ion-android-send"></i>
         </div>
     </ion-footer-bar>

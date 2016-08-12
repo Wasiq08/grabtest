@@ -223,7 +223,8 @@ angular.module('app.controllers', [])
                         allowEdit: false,
                         encodingType: Camera.EncodingType.JPEG,
                         popoverOptions: CameraPopoverOptions,
-                        saveToPhotoAlbum: false
+                        saveToPhotoAlbum: false,
+                        correctOrientation: true
                     };
 
                     $cordovaCamera.getPicture(options).then(function(imageData) {
@@ -778,7 +779,8 @@ angular.module('app.controllers', [])
     }
 
     $rootScope.$on('POST_CREATED', function(event, args) {
-        $scope.feeds.unshift(args.post)
+        //$scope.feeds.unshift(args.post)
+        $scope.doRefresh();
     })
 
     $rootScope.$on('POST_DELETED', function(event, args) {
@@ -788,79 +790,21 @@ angular.module('app.controllers', [])
 
     $scope.getpicture = function() {
         var options = {
-            quality: 80,
+            quality: 100,
             destinationType: Camera.DestinationType.DATA_URL,
             sourceType: Camera.PictureSourceType.CAMERA,
             allowEdit: false,
             encodingType: Camera.EncodingType.JPEG,
             popoverOptions: CameraPopoverOptions,
-            saveToPhotoAlbum: false
+            saveToPhotoAlbum: false,
+            correctOrientation: true
         };
 
         $cordovaCamera.getPicture(options).then(function(imagedata) {
 
             $scope.imageData = "data:image/jpeg;base64," + imagedata;
-            // var me = {};
-            // me.current_image = "data:image/jpeg;base64," + imagedata;
-            // me.detection_type = 'LABEL_DETECTION';
 
-            // me.detection_types = {
-            //     LABEL_DETECTION: 'label',
-            //     TEXT_DETECTION: 'text',
-            //     LOGO_DETECTION: 'logo',
-            //     LANDMARK_DETECTION: 'landmark'
-            // };
-
-            // var api_key = 'AIzaSyDtOFOdgBAO9Un2IAsdIDugwuHDO4Hqo10';
-            // var vision_api_json = {
-            //     "requests": [{
-            //         "image": {
-            //             "content": imagedata
-            //         },
-            //         "features": [{
-            //             "type": me.detection_type,
-            //             "maxResults": 10
-            //         }]
-            //     }]
-            // };
-
-            // var file_contents = JSON.stringify(vision_api_json);
-
-            // $cordovaFile.writeFile(
-            //     cordova.file.applicationStorageDirectory,
-            //     'file.json',
-            //     file_contents,
-            //     true
-            // ).then(function(result) {
-
-            //     var headers = {
-            //         'Content-Type': 'application/json'
-            //     };
-
-            //     options.headers = headers;
-
-            //     var server = 'https://vision.googleapis.com/v1/images:annotate?key=' + api_key;
-            //     var filePath = cordova.file.applicationStorageDirectory + 'file.json';
-
-            //     $cordovaFileTransfer.upload(server, filePath, options, true)
-            //         .then(function(result) {
-
-            //             var res = JSON.parse(result.response);
-            //             var key = me.detection_types[me.detection_type] + 'Annotations';
-            //             //$rootScope.postImageTags = res.responses[0].labelAnnotations;
-            //             $rootScope.$broadcast('Post_image_tags', {tags:  res.responses[0].labelAnnotations })
-            //             console.log("me result", res)
-            //             console.log("me result key", key)
-            //             //me.image_description = res.responses[0][key][0].description;
-            //         }, function(err) {
-            //             console.log('An error occurred while uploading the file', JSON.stringify(err));
-            //         });
-            // }, function(err) {
-            //     console.log('An error occurred while trying to write the file');
-            // });
-
-
-            //$rootScope.postimagedata = imageData;
+            //$rootScope.postimagedata = imagedata;
             $rootScope.postimagedata = "data:image/jpeg;base64," + imagedata;
             $state.go('sidemenu.createpost');
 
@@ -908,12 +852,13 @@ angular.module('app.controllers', [])
 
 })
 
-.controller('CreatePostCtrl', function($scope, $cordovaFile, $cordovaFileTransfer, localStorageService, appModalService, Posts, $rootScope, ImageService, $cordovaGeolocation, $ionicHistory, $state) {
+.controller('CreatePostCtrl', function($scope, $cordovaFile, $cordovaFileTransfer, localStorageService, appModalService, Posts, $rootScope, ImageService, $cordovaGeolocation, $ionicHistory, $state, $ionicPopup) {
     $scope.imgobj = ImageService.getImage();
     $scope.final_obj = {};
     $scope.isloading = true;
     $scope.loadedvalue = 0.0;
     var imageData = $rootScope.postimagedata;
+    //$scope.imageData = 'img/dessert.jpg'; 
     //$scope.final_obj.location = {"lon":51.12076493195686,"lat":-113.98040771484375};
     try {
         var options = {
@@ -936,6 +881,7 @@ angular.module('app.controllers', [])
                     console.log(result)
                     $scope.final_obj.tag = result.data;
                     $scope.hashtags = result.data;
+                    $rootScope.hashtags = result.data;
                 })
 
             }, function(err) {
@@ -970,9 +916,9 @@ angular.module('app.controllers', [])
         })
 
     $scope.selectCategory = {}
-    $scope.selectCategory.category_name = "Select Category";
+    $scope.selectCategory.category_name = "Fruits";
 
-    $scope.final_obj.category = "Select Category";
+    $scope.final_obj.category = "Fruits";
     $scope.final_obj.price = 30;
     $scope.final_obj.remark = "";
 
@@ -988,8 +934,14 @@ angular.module('app.controllers', [])
     })
 
     $scope.removeTags = function(i) {
-        $scope.hashtags.splice(i, 1);
-        $scope.final_obj.tag.splice(i, 1);
+        console.log("hastags are before", $rootScope.hashtags)
+        console.log("index", i)
+            // $scope.hashtags.splice(i, 1);
+
+        $rootScope.hashtags.splice(i, 1);
+        //$scope.final_obj.tag.splice(i, 1);
+
+        console.log("hastags are after", $rootScope.hashtags)
     }
 
     $scope.selectCategory = function() {
@@ -1002,15 +954,19 @@ angular.module('app.controllers', [])
             }
         })
     }
-
+    $rootScope.hashtags = []
+    console.log("hashtage value is", $rootScope.hashtags)
     $scope.selectCategoryOption = function() {
         console.log("hello")
+
         appModalService.show('templates/add-interest.html', 'CategoriesModalCtrl as vm', {}).then(function(res) {
             console.log(res)
             if (res != null) {
                 $scope.insertTags = 1;
                 $scope.final_obj.tag = res.hashtags;
                 $scope.hashtags = res.hashtags;
+                console.log("final hashhtags", res.hashtags)
+                $rootScope.hashtags = res.hashtags;
                 //CreateGoalDataService.setTags(res.hashtags);
             }
         })
@@ -1019,7 +975,7 @@ angular.module('app.controllers', [])
     $scope.selectLocation = function() {
         console.log("hello")
             //$state.go('sidemenu.map');
-
+        $scope.final_obj.tag = $rootScope.hashtags;
         appModalService.show('templates/map.html', 'MapCtrl as vm', {}).then(function(res) {
             console.log("location ", res.location);
             if (res != null) {
@@ -1042,18 +998,29 @@ angular.module('app.controllers', [])
     $scope.creatPost = function() {
         console.log($scope.final_obj)
         console.log($scope.selectCategory)
-        $scope.final_obj.category = $scope.selectCategory.category_name;
-        Posts.create($scope.final_obj).success(function(result) {
-                console.log(result);
-                $ionicHistory.nextViewOptions({
-                    disableBack: true
-                });
-                $rootScope.$broadcast('POST_CREATED', { post: result.data });
-                $state.go('sidemenu.dashboard');
-            })
-            .error(function(err) {
-                console.log(err);
-            })
+        $scope.final_obj.category = $scope.selectCategory.category_name == null ? 'Fruits' : $scope.selectCategory.category_name;
+        if ($scope.final_obj.loc_name == "Add Location") {
+            $ionicPopup.alert({
+                title: 'Please Select Location',
+            });
+        } else if ($scope.loadedvalue < 96) {
+            $ionicPopup.alert({
+                title: 'Please Wait While Your Image is being Loaded',
+            });
+        } else {
+            Posts.create($scope.final_obj).success(function(result) {
+                    console.log(result);
+                    $ionicHistory.nextViewOptions({
+                        disableBack: true
+                    });
+                    $rootScope.$broadcast('POST_CREATED', { post: result.data });
+                    $state.go('sidemenu.dashboard');
+                })
+                .error(function(err) {
+                    console.log(err);
+                })
+        }
+
     }
 
 
@@ -1161,7 +1128,7 @@ angular.module('app.controllers', [])
 
 }])
 
-.controller('CategoriesModalCtrl', ['$scope', function($scope) {
+.controller('CategoriesModalCtrl', ['$scope', '$rootScope', function($scope, $rootScope) {
     var vm = this;
     vm.hashtags = []
     vm.featuredTags = []
@@ -1176,8 +1143,8 @@ angular.module('app.controllers', [])
         currentVal = currentVal.replace(/(\s+)/ig, ' ');
         currentVal = currentVal.replace(/(\s)/ig, '-');
         currentVal = currentVal.replace('#', '');
-        if ($scope.hashtags.indexOf(currentVal) == -1) {
-            $scope.hashtags.push(currentVal);
+        if ($rootScope.hashtags.indexOf(currentVal) == -1) {
+            $rootScope.hashtags.push(currentVal);
             vm.hashtags.push(currentVal);
         }
 
@@ -1187,14 +1154,14 @@ angular.module('app.controllers', [])
         if ($scope.featTagsClass[index] == '') {
             $scope.featTagsClass[index] = 'active';
             vm.hashtags.push("#" + tag);
-            $scope.hashtags.push("#" + tag);
+            $rootScope.hashtags.push("#" + tag);
         } else {
             $scope.featTagsClass[index] = '';
 
             var tagname = "#" + tag;
-            for (var i = 0; i < $scope.hashtags.length; i++) {
-                if ($scope.hashtags[i] == tagname) {
-                    $scope.hashtags.splice(i, 1);
+            for (var i = 0; i < $$rootScope.hashtags.length; i++) {
+                if ($rootScope.hashtags[i] == tagname) {
+                    $rootScope.hashtags.splice(i, 1);
                     vm.hashtags.splice(i, 1);
                 }
             }
@@ -1205,7 +1172,7 @@ angular.module('app.controllers', [])
 
 
     $scope.removeHashTags = function(event) {
-        $scope.hashtags.splice(event.target.dataset.index, 1);
+        $rootScope.hashtags.splice(event.target.dataset.index, 1);
     }
 
     $scope.keypress = function(event) {
@@ -1234,12 +1201,12 @@ angular.module('app.controllers', [])
 
     $scope.keydown = function(event) {
         if (event.keyCode == 8) {
-            $scope.hashtags.pop();
+            $rootScope.hashtags.pop();
         }
     }
 
     vm.confirm = function(category) {
-        vm.hashtags = $scope.hashtags;
+        vm.hashtags = $rootScope.hashtags;
         $scope.closeModal(category);
     };
 
@@ -1268,9 +1235,10 @@ angular.module('app.controllers', [])
         user_src: 'img/evans.jpeg',
         user_name: 'Michael Evans'
     }]
-
+    $scope.isLoading = true;
     User.getUser($stateParams.id).success(function(res) {
         console.log(res)
+        $scope.isLoading = false;
         $scope.user = res.data;
     })
 
@@ -1288,6 +1256,11 @@ angular.module('app.controllers', [])
 }])
 
 .controller('FoodProfileCtrl', function($scope, localStorageService, Posts, $stateParams, $ionicPopup) {
+
+    $scope.$on('$ionicView.beforeEnter', function() {
+        $scope.focus = true;
+        console.log("focus is true")
+    });
     // $scope.x = {
     //     src: 'img/waffle.jpg',
     //     name: 'Awsome Waffle! The hot Chocolate Like Dream! Awsome Waffle! The hot Chocolate Like Dream!',
@@ -1328,7 +1301,7 @@ angular.module('app.controllers', [])
     //     created: "few secs ago!"
     // }]
     $scope.uid = localStorageService.get('loggedInUser')._id;
-
+    $scope.isLoading = true;
     $scope.postid = $stateParams.id;
     Posts.get($stateParams.id).success(function(res) {
             console.log(res)
@@ -1340,7 +1313,7 @@ angular.module('app.controllers', [])
                     $scope.post.isLiked = false;
                 }
             }
-
+            $scope.isLoading = false;
         })
         .error(function(err) {
 

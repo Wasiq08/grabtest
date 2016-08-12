@@ -10,28 +10,33 @@
         </div>
     </ion-nav-buttons>
     <ion-content class="has-header fd-bg">
-        <div class="profile-image">
-            <img ng-src="{{user.media[0].medium}}" class="fd-img fd-img-br  border-style border-wd-m">
+        <div ng-if="isLoading" style="width:100%;">
+            <ion-spinner style="margin-left:47%;" icon="ios"></ion-spinner>
         </div>
-        <div class="profile-name ft-24">
-            {{user.name}}
-        </div>
-        <div style="color: white; text-align: center;">
-            <p class="pts"><i class="ion-ios-location"></i><span class="pls">Istanbul, Turkey</span>
-            </p>
-        </div>
-        <div class="ptl pbl plm border-style-top border-style-bottom" style="background-color: rgba(39, 62, 84, 1); margin-top: 10px; border-top-color: white;border-bottom-color: white;">
-            <div class="fd-m-align ft-16" style="display: inline-block; color: white; width: 30%; ">
-                <p>21</p>
-                <p><b>Posts</b></p>
+        <div  ng-if="!isLoading">
+            <div class="profile-image">
+                <img ng-src="{{user.media[0].medium}}" class="fd-img fd-img-br  border-style border-wd-m">
             </div>
-            <div class="fd-m-align ft-16" style="display: inline-block; color: white; width: 30%;">
-                <p>151</p>
-                <p><b>Likes</b></p>
+            <div class="profile-name ft-24">
+                {{user.name}}
             </div>
-            <div class="fd-m-align ft-16" style="display: inline-block; color: white;width: 30%;">
-                <p>{{user.views.length}}</p>
-                <p><b>Views</b></p>
+            <div style="color: white; text-align: center;">
+                <p class="pts"><i class="ion-ios-location"></i><span class="pls">Istanbul, Turkey</span>
+                </p>
+            </div>
+            <div class="ptl pbl plm border-style-top border-style-bottom" style="background-color: rgba(39, 62, 84, 1); margin-top: 10px; border-top-color: white;border-bottom-color: white;">
+                <div class="fd-m-align ft-16" style="display: inline-block; color: white; width: 30%; ">
+                    <p>21</p>
+                    <p><b>Posts</b></p>
+                </div>
+                <div class="fd-m-align ft-16" style="display: inline-block; color: white; width: 30%;">
+                    <p>151</p>
+                    <p><b>Likes</b></p>
+                </div>
+                <div class="fd-m-align ft-16" style="display: inline-block; color: white;width: 30%;">
+                    <p>{{user.views.length}}</p>
+                    <p><b>Views</b></p>
+                </div>
             </div>
         </div>
         <div ng-repeat="x in posts" style="width: 100%; position: relative; margin-bottom: 10px; background-color: rgba(255,255,255, 0.96);">
