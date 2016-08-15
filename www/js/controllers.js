@@ -64,12 +64,22 @@ angular.module('app.controllers', [])
 
 })
 
-.controller('SideMenuCtrl', function($scope, $rootScope, localStorageService) {
+.controller('SideMenuCtrl', function($scope, $state,$rootScope, localStorageService) {
     $rootScope.user = localStorageService.get("loggedInUser");
     $rootScope.$on('User_changed', function(event, args) {
         $rootScope.user = args.user;
     })
 
+
+    $scope.feedback = function(){
+        console.log("FFFFFFFFF"); 
+        $state.go('feedback');
+    }
+
+})
+
+.controller('FeedbackCtrl',  function($ionicSideMenuDelegate){
+      $ionicSideMenuDelegate.toggleLeft();
 })
 
 .controller('signUpCtrl', function($scope, ionicDatePicker, $ionicLoading, localStorageService, $state, User, $ionicPopup, $rootScope) {
