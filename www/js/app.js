@@ -5,11 +5,12 @@
 // the 2nd parameter is an array of 'requires'
 // 'starter.services' is found in services.js
 // 'starter.controllers' is found in controllers.js
-angular.module('app', ['ionic', 'ngCordova', 'ionic-datepicker', 'ngGeolocation', 'ion-place-tools', 'ionic.ui.modalService', 'ionic-modal-select', 'LocalStorageModule', 'ionic.contrib.ui.hscrollcards', 'app.controllers', 'app.routes', 'app.services', 'app.directives', 'CoreApi'])
+angular.module('app', ['ionic', 'ngCordova', 'ionic-datepicker', 'ngGeolocation', 'ion-place-tools', 'ionic.ui.modalService', 'ionic-modal-select', 'LocalStorageModule', 'ionic.contrib.ui.hscrollcards', 'app.controllers', 'app.routes', 'app.services', 'app.directives', 'CoreApi', 'ngOpenFB'])
 
 .constant('_', window._)
 
-.run(function($ionicPlatform) {
+.run(function($ionicPlatform, ngFB) {
+    ngFB.init({appId: '154417551661412'});
     $ionicPlatform.ready(function() {
         // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
         // for form inputs)

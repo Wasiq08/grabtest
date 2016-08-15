@@ -1,6 +1,6 @@
-angular.module('app.controllers', [])
+angular.module('app.controllers', ['ngOpenFB'])
 
-.controller('loginCtrl', function($scope, User, $ionicPopup, $ionicLoading, $state, localStorageService, $rootScope) {
+.controller('loginCtrl', function($scope, User, $ionicPopup, $ionicLoading, $state, localStorageService, $rootScope, ngFB, $ionicModal, $timeout) {
     $scope.users = {};
     // $scope.users.user_email = 'ameerhamza810@gmail.com';
     // $scope.users.password = '123'
@@ -61,6 +61,34 @@ angular.module('app.controllers', [])
             console.log('Thank you for not eating my delicious ice cream cone');
         });
     };
+
+    $scope.fbLogin = function() {
+        console.log("in fb login")
+        ngFB.login({ scope: 'email,publish_actions' }).then(
+            function(response) {
+                console.log(response)
+                if (response.status === 'connected') {
+                    console.log('Facebook login succeeded');
+                    ngFB.api({
+                        path: '/me',
+                        params: { fields: 'id,name' }
+                    }).then(
+                        function(user) {
+                            $scope.user = user;
+                        },
+                        function(error) {
+                            alert('Facebook error: ' + error.error_description);
+                        });
+                    $scope.closeLogin();
+                } else {
+                    alert('Facebook login failed');
+                }
+            });
+    };
+
+    $scope.closeLogin = function() {
+
+    }
 
 })
 
