@@ -11,7 +11,12 @@ angular.module('app.routes', [])
             url: '/sidemenu',
             templateUrl: 'templates/sidemenu.html',
             abstract: true,
-            controller: 'SideMenuCtrl'
+            controller: 'SideMenuCtrl',
+            onEnter: function($state, localStorageService) {
+                if (!localStorageService.get('loggedInUser')) {
+                    $state.go('login');
+                }
+            }
         })
 
     .state('sidemenu.dashboard', {
@@ -85,6 +90,26 @@ angular.module('app.routes', [])
         }
     })
 
+    .state('sidemenu.login', {
+        url: '/login',
+        views: {
+            'menuContent': {
+                templateUrl: 'templates/login.html',
+                controller: 'loginCtrl'
+            }
+        }
+    })
+
+    .state('sidemenu.feedlocation', {
+        url: '/feedlocation',
+        views: {
+            'menuContent': {
+                templateUrl : 'templates/feedlocation.html',
+                controller: 'FeedLocationCtrl'
+            }
+        }
+    })
+
     .state('login', {
         url: '/main',
         templateUrl: 'templates/login.html',
@@ -145,10 +170,10 @@ angular.module('app.routes', [])
     })
 
 
-    $urlRouterProvider.otherwise('/main')
+    // $urlRouterProvider.otherwise('/main')
     //$urlRouterProvider.otherwise('/sidemenu/dashboard')
 
-
+    $urlRouterProvider.otherwise('/sidemenu/dashboard')
 
 
 });

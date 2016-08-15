@@ -145,6 +145,12 @@ angular.module('CoreApi', ['CoreApiUtilities'])
         var url = httpService.Utils.buildUrl(new Array('location'));
         return httpService.$http.post(url, params, config);
     }
+
+    this.getSuggestedTags = function(imageid) {
+        var config = httpService.Utils.getHeader();
+        var url = httpService.Utils.buildUrl(new Array('gcloud', 'tag', imageid));
+        return httpService.$http.get(url, config);
+    }
 }])
 
 angular.module('CoreApiUtilities', [])

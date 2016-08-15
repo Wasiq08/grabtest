@@ -10,7 +10,10 @@
         </div>
     </ion-nav-buttons>
     <ion-content class="has-header has-footer fd-bg">
-        <div style="width: 100%; position: relative;  background-color: rgba(255,255,255, 0.96);">
+        <div ng-if="isLoading" style="width:100%;">
+            <ion-spinner style="margin-left:47%;" icon="ios"></ion-spinner>
+        </div>
+        <div ng-if="!isLoading" style="width: 100%; position: relative;  background-color: rgba(255,255,255, 0.96);">
             <div style="width: 100%; height: 200px;">
                 <img ng-src="{{post.media[0].medium}}" class="fd-img">
             </div>
@@ -18,7 +21,7 @@
                 <a ui-sref="sidemenu.foodprofile">
                     <p class="ft-18 ptx"><b>{{post.remark}}</b></p>
                 </a>
-                <p class="pts"><span class="prs" ng-repeat="tag in post.tag">{{tag}}</span></p>
+                <p class="pts"><span class="prs" ng-repeat="tag in post.tag">#{{tag.desc || tag}}</span></p>
                 <p class="pts"><i ng-if="post.category != 'Select Category'" class="ion-soup-can-outline"></i><span ng-if="post.category != 'Select Category'" class="plx prs">{{post.category}}</span> <i class="ion-clock"></i><span class="plx prs" readable-time-filter time="conversation.createdTime" converted="readabletime">16 Min</span><i class="ion-ios-location"></i><span class="plx">{{post.loc_name}}</span></p>
             </div>
             <div class="pll ptm pbm ft-24 border-style-top border-style-bottom">
@@ -40,7 +43,7 @@
     </ion-content>
     <ion-footer-bar class="custom-fd-bar fd-br-top sb-bg">
         <div style="width:100%;">
-            <textarea placeholder="Type your comment" style="width:95%;    padding: 12px 0px 0px 5px;" row="1" ng-model="params.text"></textarea>
+            <textarea placeholder="Type your comment" style="width:95%;    padding: 12px 0px 0px 5px;" row="1"  ng-model="params.text" ></textarea>
         </div>
         <div on-tap="comment()" style="float: right; padding-top:5px; padding-right:10px;" class="ft-32">
             <i class="ion-android-send"></i>

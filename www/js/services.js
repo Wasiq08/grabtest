@@ -22,6 +22,7 @@ angular.module('app.services', [])
 
 .service('App', function($q, UserService, UserDataServices) {
     this.init = function() {
+        console.log("in init")
         var deferred = $q.defer();
         $timeout(function(){
         	if (localStorageService.get('loggedInUser')) {
@@ -35,6 +36,22 @@ angular.module('app.services', [])
         return deferred.promise;
     }
 })
+
+.factory('Markers', [function () {
+    var final_obj = {};
+    final_obj.markers = [];
+
+    final_obj.put = function(arr) {
+        final_obj.markers = final_obj.markers.concat(arr)
+    }
+
+    final_obj.get = function() {
+        return final_obj.markers;
+    }
+
+    return final_obj;
+    
+}])
 
 .service("UserService", function(localStorageService, $q, $location) {
     this.getLoggedInUser = function() {

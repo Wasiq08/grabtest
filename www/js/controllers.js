@@ -233,7 +233,8 @@ angular.module('app.controllers', [])
                         allowEdit: false,
                         encodingType: Camera.EncodingType.JPEG,
                         popoverOptions: CameraPopoverOptions,
-                        saveToPhotoAlbum: false
+                        saveToPhotoAlbum: false,
+                        correctOrientation: true
                     };
 
                     $cordovaCamera.getPicture(options).then(function(imageData) {
@@ -544,79 +545,9 @@ angular.module('app.controllers', [])
     }
 })
 
-.controller('dashboardCtrl', function($rootScope, $ionicPopup, $ionicHistory, $ionicPopover, ImageService, $ionicLoading, localStorageService, $scope, Posts, $cordovaFileTransfer, $cordovaCamera, $state, $ionicModal, $cordovaGeolocation) {
+.controller('dashboardCtrl', function($rootScope, Markers, $cordovaFile, $ionicPopup, $ionicHistory, $ionicPopover, ImageService, $ionicLoading, localStorageService, $scope, Posts, $cordovaFileTransfer, $cordovaCamera, $state, $ionicModal, $cordovaGeolocation) {
     console.log("in dashboard ctrl");
-    // if (localStorageService.get('loggedInUser')) {
 
-    // } else {
-    //     $state.go('login')
-    // }
-
-    // $scope.feeds = [{
-    //     user: {
-    //         src: 'img/waffle.jpg',
-    //         name: 'Awsome Waffle! The hot Chocolate Like Dream!',
-    //         price: '$ 11.24',
-    //         media: [{
-    //             small: 'img/John_Doe.jpg'
-    //         }],
-    //         user_src: 'img/John_Doe.jpg',
-    //         name: 'John Doe'
-    //     },
-    //     feed: {
-    //         location: {
-    //             formatted_address: "Bar b q tonight, Karachi Pakistan"
-    //         },
-    //         price: 20,
-    //         media: [{
-    //             medium: 'img/waffle.jpg'
-    //         }]
-    //     }
-    // }, {
-    //     user: {
-    //         src: 'img/hotchocolate.jpg',
-    //         name: 'The hot Chocolate Like Dream! The hot Chocolate Like Dream! ',
-    //         price: '$ 32.86',
-    //         media: [{
-    //             small: 'img/maria.jpg'
-    //         }],
-    //         user_src: 'img/maria.jpg',
-    //         name: 'Ana Maria'
-    //     },
-    //     feed: {
-    //         location: {
-    //             formatted_address: "KababJees, Karachi Pakistan"
-    //         },
-    //         price: 20,
-    //         media: [{
-    //             medium: 'img/hotchocolate.jpg'
-    //         }]
-    //     }
-
-    // }, {
-    //     user: {
-    //         src: 'img/dessert.jpg',
-    //         name: 'Awsome Dessert!',
-    //         price: '$ 20.00',
-    //         media: [{
-    //             small: 'img/evans.jpeg'
-    //         }],
-    //         user_src: 'img/evans.jpeg',
-    //         name: 'Michael Evans'
-    //     },
-    //     feed: {
-    //         location: {
-    //             formatted_address: "Burger Lab, Karachi Pakistan"
-    //         },
-    //         price: 20,
-    //         media: [{
-    //             medium: 'img/dessert.jpg'
-    //         }]
-    //     }
-
-    // }]
-
-    //$rootScope.imageData = "img/dessert.jpg";
     $ionicModal.fromTemplateUrl('templates/search-filters.html', {
         scope: $scope,
         animation: 'slide-in-up'
@@ -753,6 +684,7 @@ angular.module('app.controllers', [])
 
                 for (var i = 0; i < res.data.length; i++) {
                     $scope.feeds.push(res.data[i]);
+                    Markers.put(res.data[i]);
                     for (var j = 0; j < res.data[i].feed.likes.length; j++) {
                         if (uid == res.data[i].feed.likes[j].user) {
                             $scope.feeds[i].isLiked = true;
@@ -788,7 +720,8 @@ angular.module('app.controllers', [])
     }
 
     $rootScope.$on('POST_CREATED', function(event, args) {
-        $scope.feeds.unshift(args.post)
+        //$scope.feeds.unshift(args.post)
+        $scope.doRefresh();
     })
 
     $rootScope.$on('POST_DELETED', function(event, args) {
@@ -798,22 +731,23 @@ angular.module('app.controllers', [])
 
     $scope.getpicture = function() {
         var options = {
-            quality: 80,
-            destinationType: Camera.DestinationType.FILE_URI,
+            quality: 100,
+            destinationType: Camera.DestinationType.DATA_URL,
             sourceType: Camera.PictureSourceType.CAMERA,
             allowEdit: false,
             encodingType: Camera.EncodingType.JPEG,
             popoverOptions: CameraPopoverOptions,
-            saveToPhotoAlbum: false
+            saveToPhotoAlbum: false,
+            correctOrientation: true
         };
 
-        $cordovaCamera.getPicture(options).then(function(imageData) {
-            console.log(imageData)
+        $cordovaCamera.getPicture(options).then(function(imagedata) {
+
+            $scope.imageData = "data:image/jpeg;base64," + imagedata;
+
+            //$rootScope.postimagedata = imagedata;
+            $rootScope.postimagedata = "data:image/jpeg;base64," + imagedata;
             $state.go('sidemenu.createpost');
-
-            $rootScope.postimagedata = imageData;
-            //= "data:image/jpeg;base64," + imageData;
-
 
             //var image = document.getElementById('myImage');
             //image.src = "data:image/jpeg;base64," + imageData;
@@ -859,12 +793,13 @@ angular.module('app.controllers', [])
 
 })
 
-.controller('CreatePostCtrl', function($scope, $cordovaFileTransfer, localStorageService, appModalService, Posts, $rootScope, ImageService, $cordovaGeolocation, $ionicHistory, $state) {
+.controller('CreatePostCtrl', function($scope, $cordovaFile, $cordovaFileTransfer, localStorageService, appModalService, Posts, $rootScope, ImageService, $cordovaGeolocation, $ionicHistory, $state, $ionicPopup) {
     $scope.imgobj = ImageService.getImage();
     $scope.final_obj = {};
     $scope.isloading = true;
     $scope.loadedvalue = 0.0;
     var imageData = $rootScope.postimagedata;
+    //$scope.imageData = 'img/dessert.jpg'; 
     //$scope.final_obj.location = {"lon":51.12076493195686,"lat":-113.98040771484375};
     try {
         var options = {
@@ -883,6 +818,13 @@ angular.module('app.controllers', [])
                 $scope.imageData = $scope.finalImage.data.file[0].medium;
                 $scope.isloading = false;
                 $scope.final_obj.post_image_id = $scope.finalImage.data.fileId;
+                Posts.getSuggestedTags($scope.final_obj.post_image_id).success(function(result) {
+                    console.log(result)
+                    $scope.final_obj.tag = result.data;
+                    $scope.hashtags = result.data;
+                    $rootScope.hashtags = result.data;
+                })
+
             }, function(err) {
                 console.log(err)
                 $scope.isloading = false;
@@ -915,9 +857,9 @@ angular.module('app.controllers', [])
         })
 
     $scope.selectCategory = {}
-    $scope.selectCategory.category_name = "Select Category";
+    $scope.selectCategory.category_name = "Fruits";
 
-    $scope.final_obj.category = "Select Category";
+    $scope.final_obj.category = "Fruits";
     $scope.final_obj.price = 30;
     $scope.final_obj.remark = "";
 
@@ -927,6 +869,21 @@ angular.module('app.controllers', [])
 
     }
 
+    $rootScope.$on('Post_image_tags', function(event, args) {
+        $scope.final_obj.tag = args.tags;
+        $scope.hashtags = args.tags;
+    })
+
+    $scope.removeTags = function(i) {
+        console.log("hastags are before", $rootScope.hashtags)
+        console.log("index", i)
+            // $scope.hashtags.splice(i, 1);
+
+        $rootScope.hashtags.splice(i, 1);
+        //$scope.final_obj.tag.splice(i, 1);
+
+        console.log("hastags are after", $rootScope.hashtags)
+    }
 
     $scope.selectCategory = function() {
         appModalService.show('templates/partials/category.html', 'SelectCategoryCtrl as vm', {}).then(function(res) {
@@ -938,15 +895,19 @@ angular.module('app.controllers', [])
             }
         })
     }
-
+    $rootScope.hashtags = []
+    console.log("hashtage value is", $rootScope.hashtags)
     $scope.selectCategoryOption = function() {
         console.log("hello")
+
         appModalService.show('templates/add-interest.html', 'CategoriesModalCtrl as vm', {}).then(function(res) {
             console.log(res)
             if (res != null) {
                 $scope.insertTags = 1;
                 $scope.final_obj.tag = res.hashtags;
                 $scope.hashtags = res.hashtags;
+                console.log("final hashhtags", res.hashtags)
+                $rootScope.hashtags = res.hashtags;
                 //CreateGoalDataService.setTags(res.hashtags);
             }
         })
@@ -955,7 +916,7 @@ angular.module('app.controllers', [])
     $scope.selectLocation = function() {
         console.log("hello")
             //$state.go('sidemenu.map');
-
+        $scope.final_obj.tag = $rootScope.hashtags;
         appModalService.show('templates/map.html', 'MapCtrl as vm', {}).then(function(res) {
             console.log("location ", res.location);
             if (res != null) {
@@ -978,18 +939,29 @@ angular.module('app.controllers', [])
     $scope.creatPost = function() {
         console.log($scope.final_obj)
         console.log($scope.selectCategory)
-        $scope.final_obj.category = $scope.selectCategory.category_name;
-        Posts.create($scope.final_obj).success(function(result) {
-                console.log(result);
-                $ionicHistory.nextViewOptions({
-                    disableBack: true
-                });
-                $rootScope.$broadcast('POST_CREATED', { post: result.data });
-                $state.go('sidemenu.dashboard');
-            })
-            .error(function(err) {
-                console.log(err);
-            })
+        $scope.final_obj.category = $scope.selectCategory.category_name == null ? 'Fruits' : $scope.selectCategory.category_name;
+        if ($scope.final_obj.loc_name == "Add Location") {
+            $ionicPopup.alert({
+                title: 'Please Select Location',
+            });
+        } else if ($scope.loadedvalue < 96) {
+            $ionicPopup.alert({
+                title: 'Please Wait While Your Image is being Loaded',
+            });
+        } else {
+            Posts.create($scope.final_obj).success(function(result) {
+                    console.log(result);
+                    $ionicHistory.nextViewOptions({
+                        disableBack: true
+                    });
+                    $rootScope.$broadcast('POST_CREATED', { post: result.data });
+                    $state.go('sidemenu.dashboard');
+                })
+                .error(function(err) {
+                    console.log(err);
+                })
+        }
+
     }
 
 
@@ -1097,7 +1069,7 @@ angular.module('app.controllers', [])
 
 }])
 
-.controller('CategoriesModalCtrl', ['$scope', function($scope) {
+.controller('CategoriesModalCtrl', ['$scope', '$rootScope', function($scope, $rootScope) {
     var vm = this;
     vm.hashtags = []
     vm.featuredTags = []
@@ -1112,9 +1084,9 @@ angular.module('app.controllers', [])
         currentVal = currentVal.replace(/(\s+)/ig, ' ');
         currentVal = currentVal.replace(/(\s)/ig, '-');
         currentVal = currentVal.replace('#', '');
-        if ($scope.hashtags.indexOf("#" + currentVal) == -1) {
-            $scope.hashtags.push("#" + currentVal);
-            vm.hashtags.push("#" + currentVal);
+        if ($rootScope.hashtags.indexOf(currentVal) == -1) {
+            $rootScope.hashtags.push(currentVal);
+            vm.hashtags.push(currentVal);
         }
 
     }
@@ -1123,14 +1095,14 @@ angular.module('app.controllers', [])
         if ($scope.featTagsClass[index] == '') {
             $scope.featTagsClass[index] = 'active';
             vm.hashtags.push("#" + tag);
-            $scope.hashtags.push("#" + tag);
+            $rootScope.hashtags.push("#" + tag);
         } else {
             $scope.featTagsClass[index] = '';
 
             var tagname = "#" + tag;
-            for (var i = 0; i < $scope.hashtags.length; i++) {
-                if ($scope.hashtags[i] == tagname) {
-                    $scope.hashtags.splice(i, 1);
+            for (var i = 0; i < $$rootScope.hashtags.length; i++) {
+                if ($rootScope.hashtags[i] == tagname) {
+                    $rootScope.hashtags.splice(i, 1);
                     vm.hashtags.splice(i, 1);
                 }
             }
@@ -1141,7 +1113,7 @@ angular.module('app.controllers', [])
 
 
     $scope.removeHashTags = function(event) {
-        $scope.hashtags.splice(event.target.dataset.index, 1);
+        $rootScope.hashtags.splice(event.target.dataset.index, 1);
     }
 
     $scope.keypress = function(event) {
@@ -1170,12 +1142,12 @@ angular.module('app.controllers', [])
 
     $scope.keydown = function(event) {
         if (event.keyCode == 8) {
-            $scope.hashtags.pop();
+            $rootScope.hashtags.pop();
         }
     }
 
     vm.confirm = function(category) {
-        vm.hashtags = $scope.hashtags;
+        vm.hashtags = $rootScope.hashtags;
         $scope.closeModal(category);
     };
 
@@ -1204,9 +1176,10 @@ angular.module('app.controllers', [])
         user_src: 'img/evans.jpeg',
         user_name: 'Michael Evans'
     }]
-
+    $scope.isLoading = true;
     User.getUser($stateParams.id).success(function(res) {
         console.log(res)
+        $scope.isLoading = false;
         $scope.user = res.data;
     })
 
@@ -1224,6 +1197,11 @@ angular.module('app.controllers', [])
 }])
 
 .controller('FoodProfileCtrl', function($scope, localStorageService, Posts, $stateParams, $ionicPopup) {
+
+    $scope.$on('$ionicView.beforeEnter', function() {
+        $scope.focus = true;
+        console.log("focus is true")
+    });
     // $scope.x = {
     //     src: 'img/waffle.jpg',
     //     name: 'Awsome Waffle! The hot Chocolate Like Dream! Awsome Waffle! The hot Chocolate Like Dream!',
@@ -1264,7 +1242,7 @@ angular.module('app.controllers', [])
     //     created: "few secs ago!"
     // }]
     $scope.uid = localStorageService.get('loggedInUser')._id;
-
+    $scope.isLoading = true;
     $scope.postid = $stateParams.id;
     Posts.get($stateParams.id).success(function(res) {
             console.log(res)
@@ -1276,7 +1254,7 @@ angular.module('app.controllers', [])
                     $scope.post.isLiked = false;
                 }
             }
-
+            $scope.isLoading = false;
         })
         .error(function(err) {
 
@@ -1533,42 +1511,193 @@ angular.module('app.controllers', [])
 
 })
 
-// .controller('MapCtrl', function($scope, $ionicLoading) {
-//     console.log("in map ctrl")
-//     function initialize() {
-//         var mapOptions = {
-//             center: new google.maps.LatLng(43.07493, -89.381388),
-//             zoom: 16,
-//             mapTypeId: google.maps.MapTypeId.ROADMAP
-//         };
-//         var map = new google.maps.Map(document.getElementById("map"),
-//             mapOptions);
+.controller('FeedLocationCtrl', function($scope, Markers, $cordovaGeolocation, $ionicSideMenuDelegate) {
+    // $ionicSideMenuDelegate.toggleLeft();
 
-//         // Stop the side bar from dragging when mousedown/tapdown on the map
-//         google.maps.event.addDomListener(document.getElementById('map'), 'mousedown', function(e) {
-//             e.preventDefault();
-//             return false;
-//         });
 
-//         $scope.map = map;
-//     }
-//     google.maps.event.addDomListener(window, 'load', initialize);
+    function initMap() {
 
-//     $scope.centerOnMe = function() {
-//         if (!$scope.map) {
-//             return;
-//         }
+        var options = { timeout: 10000, enableHighAccuracy: true };
 
-//         $scope.loading = $ionicLoading.show({
-//             content: 'Getting current location...',
-//             showBackdrop: false
-//         });
+        $cordovaGeolocation.getCurrentPosition(options)
+            .then(function(position) {
 
-//         navigator.geolocation.getCurrentPosition(function(pos) {
-//             $scope.map.setCenter(new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude));
-//             $scope.loading.hide();
-//         }, function(error) {
-//             alert('Unable to get location: ' + error.message);
-//         });
-//     };
-// });
+                var latLng = new google.maps.LatLng(position.coords.latitude,
+                    position.coords.longitude);
+                $scope.latLng = latLng;
+
+                var mapOptions = {
+                    center: latLng,
+                    zoom: 13,
+                    mapTypeId: google.maps.MapTypeId.ROADMAP
+                };
+
+
+
+                map = new google.maps.Map(document.getElementById("map"), mapOptions);
+                var myCity = new google.maps.Circle({
+                    center: latLng,
+                    radius: 3218.69,
+                    strokeColor: "#0000FF",
+                    strokeOpacity: 0.8,
+                    strokeWeight: 2,
+                    fillColor: "#0000FF",
+                    fillOpacity: 0.4
+                });
+                myCity.setMap(map);
+                //Wait until the map is loaded
+                google.maps.event.addListenerOnce(map, 'idle', function() {
+                    loadMarkers();
+                    // enableMap();
+                });
+
+            }, function(error) {
+                console.log("Could not get location");
+            });
+
+    }
+
+    function loadMarkers() {
+
+        //Get all of the markers from our Markers factory
+        var records = Markers.get();
+
+        console.log("Markers: ", records);
+        var infoWindow = new google.maps.InfoWindow({
+            content: ""
+        });
+        var allmarkers = [];
+
+        // for (var j=0; j<records.length; j++) {
+        //     var record = records[i];
+        //     allmarkers.push(record.feed.location);
+        // }
+
+        var markers = [];
+        for (var j = 0; j < records.length; j++) {
+            var record = records[j];
+            if (j == 0) {
+                allmarkers.push(record.feed.location)
+                var markerPos = new google.maps.LatLng(record.feed.location[0], record.feed.location[1]);
+
+                // Add the markerto the map
+                var marker = new google.maps.Marker({
+                    map: map,
+                    animation: google.maps.Animation.DROP,
+                    position: markerPos
+                });
+                markers.push(marker);
+                var infoWindowContent = "<h4>" + record.loc_name + "</h4>";
+                console.log(google.maps.geometry.spherical.computeDistanceBetween(markerPos, $scope.latLng));
+                addInfoWindow(marker, infoWindowContent, record, infoWindow, map);
+            } else {
+                var items = [];
+                for (var k = 0; k < allmarkers.length; k++) {
+                    if (allmarkers[k][0] == record.feed.location[0] && allmarkers[k][1] == record.feed.location[1]) {
+                        var newLat = record.feed.location[0] + (Math.random() - .5) / 1500; // * (Math.random() * (max - min) + min);
+                        var newLng = record.feed.location[1] + (Math.random() - .5) / 1500; // * (Math.random() * (max - min) + min);
+                        finalLatLng = new google.maps.LatLng(newLat, newLng);
+
+
+                        // Add the markerto the map
+                        var marker = new google.maps.Marker({
+                            map: map,
+                            animation: google.maps.Animation.DROP,
+                            position: finalLatLng
+                        });
+                        markers.push(marker);
+                        var infoWindowContent = "<h4>" + record.loc_name + "</h4>";
+                        console.log(google.maps.geometry.spherical.computeDistanceBetween(finalLatLng, $scope.latLng));
+                        addInfoWindow(marker, infoWindowContent, record, infoWindow, map);
+                        items = [newLat, newLng]
+                    }
+                }
+
+                if (items.length == 0) {
+                    allmarkers.push(record.feed.location)
+                    var markerPos = new google.maps.LatLng(record.feed.location[0], record.feed.location[1]);
+
+                    // Add the markerto the map
+                    var marker = new google.maps.Marker({
+                        map: map,
+                        animation: google.maps.Animation.DROP,
+                        position: markerPos
+                    });
+                    markers.push(marker);
+                    var infoWindowContent = "<h4>" + record.loc_name + "</h4>";
+                    console.log(google.maps.geometry.spherical.computeDistanceBetween(markerPos, $scope.latLng));
+                    addInfoWindow(marker, infoWindowContent, record, infoWindow, map);
+                } else {
+
+                    allmarkers.push(items);
+                }
+
+            }
+
+
+        }
+        console.log("allmarkers", allmarkers)
+
+
+        // for (var i = 0; i < records.length; i++) {
+
+        //     var record = records[i];
+        //     var markerPos = new google.maps.LatLng(record.feed.location[0], record.feed.location[1]);
+
+        //     // Add the markerto the map
+        //     var marker = new google.maps.Marker({
+        //         map: map,
+        //         animation: google.maps.Animation.DROP,
+        //         position: markerPos
+        //     });
+        //     markers.push(marker);
+        //     var infoWindowContent = "<h4>" + record.loc_name + "</h4>";
+
+        //     addInfoWindow(marker, infoWindowContent, record, infoWindow, map);
+
+        // }
+        //var markerCluster = new MarkerClusterer(map, markers, { imagePath: 'img/m' });
+
+
+    }
+
+    function addInfoWindow(marker, message, record, infoWindow, map) {
+        var content = '<div id="iw-container">' +
+            '<div id="iw-user-img"><img src="' + record.user.media[0].small + '" class="fd-img fd-img-br border-style"></div>' +
+            '<div id="iw-user-name">' + record.user.name + '</div>' +
+            '<div id="iw-img">' +
+            '<div id="iw-price">$ ' + record.feed.price + '</div>' +
+            '<img src="' + record.feed.media[0].medium + '" style="width:100%; height:100%">' +
+            '</div>' +
+            '<div id="iw-title"><b>' + record.feed.remark + '</b></div>' +
+            '<div id="iw-location">' + record.feed.loc_name + '</div>' +
+            '</div>'
+
+        marker.addListener('click', function() {
+            infoWindow.setContent(content);
+            infoWindow.open(map, this);
+        });
+        // var content = '<div id="iw-container">' +
+        //     '<div class="iw-title">Porcelain Factory of Vista Alegre</div>' +
+        //     '<div class="iw-content">' +
+        //     '<div class="iw-subTitle">History</div>' +
+        //     '<img src="http://maps.marnoto.com/en/5wayscustomizeinfowindow/images/vistalegre.jpg" alt="Porcelain Factory of Vista Alegre" height="115" width="83">' +
+        //     '<p>Founded in 1824, the Porcelain Factory of Vista Alegre was the first industrial unit dedicated to porcelain production in Portugal. For the foundation and success of this risky industrial development was crucial the spirit of persistence of its founder, José Ferreira Pinto Basto. Leading figure in Portuguese society of the nineteenth century farm owner, daring dealer, wisely incorporated the liberal ideas of the century, having become "the first example of free enterprise" in Portugal.</p>' +
+        //     '<div class="iw-subTitle">Contacts</div>' +
+        //     '<p>VISTA ALEGRE ATLANTIS, SA<br>3830-292 Ílhavo - Portugal<br>' +
+        //     '<br>Phone. +351 234 320 600<br>e-mail: geral@vaa.pt<br>www: www.myvistaalegre.com</p>' +
+        //     '</div>' +
+        //     '<div class="iw-bottom-gradient"></div>' +
+        //     '</div>';
+
+
+
+        // google.maps.event.addListener(marker, 'click', function() {
+        //     infoWindow.open(map, marker);
+        // });
+
+    }
+
+    initMap();
+
+})

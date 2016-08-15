@@ -1,6 +1,6 @@
 angular.module('app.directives', [])
 
-.directive('blankDirective', [function(){
+.directive('blankDirective', [function() {
 
 }])
 
@@ -96,3 +96,18 @@ angular.module('app.directives', [])
         }
     };
 })
+
+.directive('feeds', ['$state', function($state) {
+    return {
+        restrict: 'AE',
+        scope: {
+            activities: '=activities'
+        },
+        templateUrl: 'templates/partials/_feeds.html',
+        link: function(scope, iElement, iAttrs) {
+            scope.navigateToUser = function(uid) {
+                $state.go('sidemenu.profile', { id: uid })
+            }
+        }
+    };
+}])
