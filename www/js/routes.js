@@ -12,18 +12,6 @@ angular.module('app.routes', [])
             templateUrl: 'templates/sidemenu.html',
             abstract: true,
             controller: 'SideMenuCtrl',
-            // resolve: {
-            //     init: function($state, App, PushwooshState, $timeout) {
-            //         App.init().then(function(res) {
-
-            //             //$state.go('sidemenu.dashboard');
-
-            //         }, function() {
-            //             $state.go('sidemenu.login');
-            //         });
-            //     }
-            // }
-
             onEnter: function($state, localStorageService) {
                 if (!localStorageService.get('loggedInUser')) {
                     $state.go('login');
@@ -108,6 +96,16 @@ angular.module('app.routes', [])
             'menuContent': {
                 templateUrl: 'templates/login.html',
                 controller: 'loginCtrl'
+            }
+        }
+    })
+
+    .state('sidemenu.feedlocation', {
+        url: '/feedlocation',
+        views: {
+            'menuContent': {
+                templateUrl : 'templates/feedlocation.html',
+                controller: 'FeedLocationCtrl'
             }
         }
     })

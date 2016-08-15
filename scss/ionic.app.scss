@@ -13533,3 +13533,42 @@ div.hscroller {
 #target {
     width: 345px;
 }
+
+
+#map img {
+  max-width: none !important;
+}
+
+#iw-container {
+  width: 200px;
+}
+
+#iw-img {
+  width:200px; height: 100px; margin-top: 10px;
+}
+
+#iw-user-img {
+  width: 30px; height: 30px;
+}
+#iw-user-name {
+  margin-top: -25px; margin-left: 40px; font-weight: bold;
+}
+
+#iw-title {
+  font-size: 14px;
+}
+
+#iw-location {
+  font-size: 10px;
+} 
+
+#iw-price {
+  width: 60px;
+  background-color: red;
+  position: absolute;
+  color: white;
+  left: 140px;
+  top: 50px;
+  padding-top: 5px;
+  padding-left: 5px;
+}
