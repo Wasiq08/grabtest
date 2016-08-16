@@ -537,10 +537,23 @@ angular.module('app.controllers', [])
 
 .controller('dashboardCtrl', function($rootScope, Markers, $cordovaFile, $ionicPopup, $ionicHistory, $ionicPopover, ImageService, $ionicLoading, localStorageService, $scope, Posts, $cordovaFileTransfer, $cordovaCamera, $state, $ionicModal, $cordovaGeolocation) {
     console.log("in dashboard ctrl");
-
+    $scope.filterlocation = "orange"
+    $scope.filterprice = "white"
+    $scope.minRangeSlider = {
+        minValue: 10,
+        maxValue: 800,
+        options: {
+            floor: 0,
+            ceil: 1000,
+            step: 1,
+            translate: function(value) {
+                return '$' + value;
+            }
+        }
+    };
     $ionicModal.fromTemplateUrl('templates/search-filters.html', {
         scope: $scope,
-        animation: 'slide-in-up'
+        animation: 'slide-in-down'
     }).then(function(modal) {
         $scope.modal = modal;
     });
@@ -552,8 +565,21 @@ angular.module('app.controllers', [])
     $scope.closeModal = function() {
         $scope.modal.hide();
     };
+    $scope.selectPrice = function() {
+
+        $scope.filterlocation = "white"
+        $scope.filterprice = "orange"
+    }
+
+    $scope.priceFilter = function() {
+        console.log($scope.minRangeSlider)
+        $scope.modal.hide();
+        $scope.doRefresh();
+    }
 
     $scope.locationFilter = function() {
+        $scope.filterlocation = "orange"
+        $scope.filterprice = "white"
         cordova.plugins.diagnostic.requestLocationAuthorization(function(status) {
             switch (status) {
                 case cordova.plugins.diagnostic.permissionStatus.NOT_REQUESTED:
@@ -658,10 +684,21 @@ angular.module('app.controllers', [])
 
     $scope.noMoreFeedContent = false;
     $scope.getDashboardFeed = function(start) {
-
         var _start = start || false;
         console.log("start ", _start)
-        Posts.getAllFeeds({ offset: offset, limit: limit, loc: location }).success(function(res) {
+        var params = {}
+        if ($scope.filterprice == "orange") {
+            params.offset = offset;
+            params.limit = limit;
+            params.price = 'price';
+            params.p = $scope.minRangeSlider.maxValue;
+        } else {
+            params.offset = offset;
+            params.limit = limit;
+            params.loc = 'location'
+        }
+        console.log("params", params)
+        Posts.getAllFeeds(params).success(function(res) {
                 if (_start) {
                     $scope.feeds = [];
                 }

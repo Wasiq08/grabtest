@@ -5,7 +5,7 @@
 // the 2nd parameter is an array of 'requires'
 // 'starter.services' is found in services.js
 // 'starter.controllers' is found in controllers.js
-angular.module('app', ['ionic', 'ngCordova', 'ionic-datepicker', 'ngGeolocation', 'ion-place-tools', 'ionic.ui.modalService', 'ionic-modal-select', 'LocalStorageModule', 'ionic.contrib.ui.hscrollcards', 'app.controllers', 'app.routes', 'app.services', 'app.directives', 'CoreApi'])
+angular.module('app', ['ionic', 'ngCordova', 'ionic-datepicker', 'ngGeolocation', 'ion-place-tools', 'ionic.ui.modalService', 'ionic-modal-select', 'LocalStorageModule', 'ionic.contrib.ui.hscrollcards', 'app.controllers', 'app.routes', 'app.services', 'app.directives', 'CoreApi', 'rzModule'])
 
 .constant('_', window._)
 

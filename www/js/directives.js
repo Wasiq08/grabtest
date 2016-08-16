@@ -111,3 +111,14 @@ angular.module('app.directives', [])
         }
     };
 }])
+
+
+.directive('searchBox', [function () {
+    return {
+        restrict: 'AE',
+        templateUrl: 'templates/search-filters.html',
+        link: function (scope, iElement, iAttrs) {
+            
+        }
+    };
+}])
