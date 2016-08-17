@@ -36,7 +36,7 @@ angular.module('app.controllers', [])
                         $state.go('welcome')
                     } else {
                         $scope.hide();
-                        $state.go('sidemenu.dashboard')
+                        $state.go('sidemenu.turn-on-location')
                     }
 
                 }
@@ -676,7 +676,7 @@ angular.module('app.controllers', [])
             console.error(error);
         });
     }
-
+    console.log($rootScope.isLocationEnabled)
     $scope.feeds = []
     var page = offset = 0;
     var limit = 5;
@@ -944,24 +944,29 @@ angular.module('app.controllers', [])
         console.log("hello")
             //$state.go('sidemenu.map');
         $scope.final_obj.tag = $rootScope.hashtags;
-        appModalService.show('templates/map.html', 'MapCtrl as vm', {}).then(function(res) {
-            console.log("location ", res.location);
-            if (res != null) {
-                var lat = res.location.geometry.location.lat();
-                var lng = res.location.geometry.location.lng()
-                var arr = [];
-                arr[0] = lat;
-                arr[1] = lng;
-                $scope.final_obj.location = arr;
-                $scope.final_obj.loc_name = res.location.formatted_address;
-            }
-            // if (res != null) {
-            //     $scope.insertLocation = 1;
-            //     $scope.goal.location = res.location;
-            //     $scope.location = res.location.formatted_address;
-            // }
-        })
+        $state.go('homelocation');
+        // appModalService.show('templates/homelocation.html', 'HomeLocationCtrl as vm', {}).then(function(res) {
+        //     console.log("location ", res.location);
+        //     if (res != null) {
+        //         var lat = res.location.geometry.location.lat();
+        //         var lng = res.location.geometry.location.lng()
+        //         var arr = [];
+        //         arr[0] = lat;
+        //         arr[1] = lng;
+        //         $scope.final_obj.location = arr;
+        //         $scope.final_obj.loc_name = res.location.formatted_address;
+        //     }
+        //     // if (res != null) {
+        //     //     $scope.insertLocation = 1;
+        //     //     $scope.goal.location = res.location;
+        //     //     $scope.location = res.location.formatted_address;
+        //     // }
+        // })
     }
+
+    $rootScope.$on('POST_LOCATION_CHANGED', function(event,args) {
+        console.log(args)
+    })
 
     $scope.creatPost = function() {
         console.log($scope.final_obj)
@@ -1219,9 +1224,110 @@ angular.module('app.controllers', [])
         })
 })
 
-.controller('TurnLocationCtrl', ['$scope', function($scope) {
+.controller('TurnLocationCtrl', function($scope, $ionicPlatform, $ionicPopup, CurrentLocationService, $state, $rootScope) {
+    console.log("in turn on location")
+    $scope.isLoading = true;
+    $ionicPlatform.ready(function() {
+        console.log("hello")
+        cordova.plugins.diagnostic.isLocationEnabled(function(enabled) {
+            //return enabled; 
+            console.log("Location setting is " + (enabled ? "enabled" : "disabled"));
+            $scope.enable = enabled;
+            if (enabled) {
 
-}])
+                CurrentLocationService.get().then(function(res) {
+                        console.log("in turn on then", res)
+
+                        if (res == true) {
+                            $state.go('sidemenu.dashboard');
+                            $scope.isLoading = false;
+                        } else {
+                            $scope.isLoading = false;
+                        }
+                    }, function(err) {
+                        $scope.isLoading = false;
+                        console.log("in turn on err", err)
+                        $ionicPopup.alert({
+                            title: 'Could not get Location. Please try again!',
+                            scope: $scope
+                        });
+                    })
+                    //$state.go('sidemenu.dashboard');
+            } else {
+                $scope.isLoading = false;
+            }
+        }, function(error) {
+            //return error;
+            //console.error("The following error occurred: " + error);
+        })
+
+
+    });
+
+    $scope.turnOn = function() {
+        if ($scope.enable) {
+            $scope.isLoading = true;
+            CurrentLocationService.get().then(function(res) {
+                console.log("in turn on then", res)
+                if (res == true) {
+                    $state.go('sidemenu.dashboard');
+                    $scope.isLoading = false;
+                } else {
+                    $scope.isLoading = false;
+                }
+            }, function(err) {
+                $scope.isLoading = false;
+                console.log("in turn on err", err)
+                $ionicPopup.alert({
+                    title: 'Could not get Location. Please try again!',
+                    scope: $scope
+                });
+            })
+        } else {
+            $scope.isLoading = true;
+            cordova.plugins.diagnostic.switchToLocationSettings();
+            $ionicPlatform.on('pause', function(res) {
+                console.log("in pause callback", res)
+
+            })
+            $ionicPlatform.on('resume', function(res) {
+
+
+                console.log("in resume callback", $scope.isLoading)
+                cordova.plugins.diagnostic.isLocationEnabled(function(enabled) {
+                    //return enabled;  
+                    console.log("Location setting is " + (enabled ? "enabled" : "disabled"));
+                    $scope.enable = enabled;
+                    if (enabled) {
+                        CurrentLocationService.get().then(function(res) {
+                                console.log("in turn on then", res)
+                                if (res == true) {
+                                    $state.go('sidemenu.dashboard');
+                                    $scope.isLoading = false;
+                                } else {
+                                    $scope.isLoading = false;
+                                }
+                            }, function(err) {
+                                $scope.isLoading = false;
+                                console.log("in turn on err", err)
+                                $ionicPopup.alert({
+                                    title: 'Could not get Location. Please try again!',
+                                    scope: $scope
+                                });
+                            })
+                            //$state.go('sidemenu.dashboard');
+                    } else {
+                        $scope.isLoading = false;
+                    }
+                }, function(error) {
+                    //return error;
+                    //console.error("The following error occurred: " + error);
+                })
+            })
+        }
+
+    }
+})
 
 .controller('FoodProfileCtrl', function($scope, localStorageService, Posts, $stateParams, $ionicPopup) {
 
@@ -1333,10 +1439,12 @@ angular.module('app.controllers', [])
     };
 })
 
-.controller('MapCtrl', function($scope, $ionicPlatform, $state, $cordovaGeolocation, $ionicPopup, $ionicLoading) {
+.controller('MapCtrl', function($scope, HSSearch, $ionicPlatform, $state, $cordovaGeolocation, $ionicPopup, $ionicLoading) {
     console.log("in map ctrl")
 
     var vm = this;
+
+
     var getCurrentLocation = function() {
         $ionicLoading.show({
             template: 'Please Wait!'
@@ -1359,7 +1467,7 @@ angular.module('app.controllers', [])
                     console.log("status", results[0].geometry.location.lat(), results[0].geometry.location.lng())
 
                     vm.location = results[0];
-                    document.getElementById('pac-input').text = "ABC"
+                    //document.getElementById('pac-input').text = "ABC"
                     $ionicLoading.hide();
                     $ionicPopup.alert({
                         title: 'Your location is ' + vm.location.formatted_address,
@@ -1381,22 +1489,23 @@ angular.module('app.controllers', [])
                 }
             });
 
-            $scope.map = new google.maps.Map(document.getElementById("map"), mapOptions);
-            var marker = new google.maps.Marker({
-                position: latLng,
-                map: $scope.map,
-                title: 'Hello World!'
-            });
-            $scope.map.addListener('bounds_changed', function() {
+            // $scope.map = new google.maps.Map(document.getElementById("map"), mapOptions);
+            // var marker = new google.maps.Marker({
+            //     position: latLng,
+            //     map: $scope.map,
+            //     title: 'Hello World!'
+            // });
+            HSSearch.init();
+            /*$scope.map.addListener('bounds_changed', function() {
                 searchBox.setBounds($scope.map.getBounds());
-            });
+            });*/
 
-            $scope.map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+            /*$scope.map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
             var input = document.getElementById('pac-input');
             var searchBox = new google.maps.places.SearchBox(input);
-            var markers = [];
+            var markers = [];*/
 
-            searchBox.addListener('places_changed', function() {
+            /*searchBox.addListener('places_changed', function() {
                 var places = searchBox.getPlaces();
                 console.log("places", places)
                 var latLng = new google.maps.LatLng(places[0].geometry.location.lat(), places[0].geometry.location.lng());
@@ -1449,7 +1558,7 @@ angular.module('app.controllers', [])
                     }
                 });
                 $scope.map.fitBounds(bounds);
-            });
+            });*/
         }, function(error) {
             $ionicLoading.hide();
             $ionicPopup.alert({
@@ -1459,36 +1568,36 @@ angular.module('app.controllers', [])
             console.log("Could not get location");
         });
     }
+    getCurrentLocation();
+    // cordova.plugins.diagnostic.isLocationEnabled(function(res) {
+    //     console.log(res)
+    //     if (!res) {
+    //         var confirmPopup = $ionicPopup.confirm({
+    //             title: 'Your device GPS is off. Do you want turn on your GPS settings?'
+    //         });
 
-    cordova.plugins.diagnostic.isLocationEnabled(function(res) {
-        console.log(res)
-        if (!res) {
-            var confirmPopup = $ionicPopup.confirm({
-                title: 'Your device GPS is off. Do you want turn on your GPS settings?'
-            });
+    //         confirmPopup.then(function(res) {
+    //             if (res) {
 
-            confirmPopup.then(function(res) {
-                if (res) {
+    //                 cordova.plugins.diagnostic.switchToLocationSettings();
+    //             } else {
+    //                 console.log('You are not sure');
+    //             }
+    //         });
+    //         $ionicPlatform.on('pause', function(res) {
+    //             console.log("in pause callback", res)
+    //         })
+    //         $ionicPlatform.on('resume', function(res) {
+    //             console.log("in resume callback", res)
+    //            getCurrentLocation();
+    //         })
 
-                    cordova.plugins.diagnostic.switchToLocationSettings();
-                } else {
-                    console.log('You are not sure');
-                }
-            });
-            $ionicPlatform.on('pause', function(res) {
-                console.log("in pause callback", res)
-            })
-            $ionicPlatform.on('resume', function(res) {
-                console.log("in resume callback", res)
-                getCurrentLocation();
-            })
+    //     } else {
+    //         getCurrentLocation();
+    //     }
+    // }, function(err) {
 
-        } else {
-            getCurrentLocation();
-        }
-    }, function(err) {
-
-    });
+    // });
 
     var options = { timeout: 10000, enableHighAccuracy: true };
 
@@ -1728,3 +1837,214 @@ angular.module('app.controllers', [])
     initMap();
 
 })
+
+.controller('HomeLocationCtrl', function($scope, $ionicLoading, $ionicPopup, HSSearch, $timeout, $cordovaGeolocation, $ionicHistory , $rootScope) {
+    console.log("helloooooo")
+    $scope.location = {};
+    var HSSearch = {
+        lastParams: false,
+        placeSearch: false,
+        autocomplete: false,
+        callback: false,
+
+        componentForm: {
+            street_number: 'short_name',
+            route: 'long_name',
+            locality: 'long_name',
+            administrative_area_level_1: 'short_name',
+            country: 'long_name',
+            postal_code: 'short_name'
+        },
+
+        labelConversion: {
+            "street_number": 'street_number',
+            "route": 'route',
+            "locality": 'city',
+            "administrative_area_level_1": 'state',
+            "country": 'country',
+            "postal_code": 'zip'
+        },
+
+        init: function() {
+            this.placeInit();
+            $(document).on("gotPosition", HSSearch.biasResults);
+        },
+
+        biasResults: function() {
+            var geolocation = new google.maps.LatLng(
+                window.userPosition.coords.latitude, window.userPosition.coords.longitude);
+            HSSearch.autocomplete.setBounds(new google.maps.LatLngBounds(geolocation,
+                geolocation));
+        },
+
+        placeInit: function() {
+            // Create the autocomplete object, restricting the search
+            // to geographical location types.
+            console.log("in place init service")
+            HSSearch.autocomplete = new google.maps.places.Autocomplete(
+                /** @type {HTMLInputElement} */
+                (document.getElementById('searchInput')), { types: ['geocode'] });
+            // When the user selects an address from the dropdown,
+            // do search
+            google.maps.event.addListener(HSSearch.autocomplete, 'place_changed', function() {
+                HSSearch.fillInAddress();
+            });
+        },
+
+        fillInAddress: function() {
+            // Get the place details from the autocomplete object.
+            var place = HSSearch.autocomplete.getPlace();
+
+            // Get place lat/lon
+            var params = {};
+            params["lat"] = place.geometry.location.d;
+            params["lon"] = place.geometry.location.e;
+            params["full"] = $("#stormSearchInput").val();
+            console.log(place)
+
+            // Get each component of the address from the place details
+            for (var i = 0; i < place.address_components.length; i++) {
+                var addressType = place.address_components[i].types[0];
+                if (HSSearch.labelConversion[addressType]) {
+                    var lbl = HSSearch.labelConversion[addressType];
+                    params[lbl] = place.address_components[i][HSSearch.componentForm[addressType]];
+                }
+            }
+
+            console.log(params);
+        }
+    };
+
+    // $timeout(function() { HSSearch.init(); }, 1000);
+    var getCurrentLocation = function() {
+        $ionicLoading.show({
+            template: 'Please Wait!'
+        })
+        var options = { timeout: 10000, enableHighAccuracy: true };
+        $cordovaGeolocation.getCurrentPosition(options).then(function(position) {
+
+            var latLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+
+            var mapOptions = {
+                center: latLng,
+                zoom: 15,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            };
+
+            var geocoder = new google.maps.Geocoder();
+            geocoder.geocode({
+                'latLng': latLng
+            }, function(results, status) {
+                if (status == google.maps.GeocoderStatus.OK) {
+                    console.log("status", results[0].geometry.location.lat(), results[0].geometry.location.lng())
+
+                    $scope.location = results[0];
+                    //document.getElementById('pac-input').text = "ABC"
+                    $ionicLoading.hide();
+                    $ionicPopup.alert({
+                        title: 'Your location is ' + $scope.location.formatted_address,
+                        scope: $scope
+                    });
+                    // var latLng = new google.maps.LatLng(results[0].geometry.location.lat(), results[0].geometry.location.lng());
+
+                    // var mapOptions = {
+                    //     center: latLng,
+                    //     zoom: 15,
+                    //     mapTypeId: google.maps.MapTypeId.ROADMAP
+                    // };
+
+                    // $scope.map = new google.maps.Map(document.getElementById("map"), mapOptions);
+                    //vm.location = results[0];
+                    //$q.resolve(results);
+                } else {
+                    //$q.reject();
+                }
+            });
+
+            $scope.map = new google.maps.Map(document.getElementById("map"), mapOptions);
+            var marker = new google.maps.Marker({
+                position: latLng,
+                map: $scope.map,
+                title: 'Hello World!'
+            });
+            HSSearch.init();
+            /*$scope.map.addListener('bounds_changed', function() {
+                searchBox.setBounds($scope.map.getBounds());
+            });*/
+
+            /*$scope.map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+            var input = document.getElementById('pac-input');
+            var searchBox = new google.maps.places.SearchBox(input);
+            var markers = [];*/
+
+            /*searchBox.addListener('places_changed', function() {
+                var places = searchBox.getPlaces();
+                console.log("places", places)
+                var latLng = new google.maps.LatLng(places[0].geometry.location.lat(), places[0].geometry.location.lng());
+
+                // var mapOptions = {
+                //     center: latLng,
+                //     zoom: 15,
+                //     mapTypeId: google.maps.MapTypeId.ROADMAP
+                // };
+
+                // $scope.map = new google.maps.Map(document.getElementById("map"), mapOptions);
+                // if (places.length == 0) {
+                //     return;
+                // }
+
+                // Clear out the old markers.
+                // markers.forEach(function(marker) {
+                //     marker.setMap(null);
+                // });
+                markers = [];
+
+                // For each place, get the icon, name and location.
+                var bounds = new google.maps.LatLngBounds();
+                places.forEach(function(place) {
+                    if (!place.geometry) {
+                        console.log("Returned place contains no geometry");
+                        return;
+                    }
+                    var icon = {
+                        url: place.icon,
+                        size: new google.maps.Size(71, 71),
+                        origin: new google.maps.Point(0, 0),
+                        anchor: new google.maps.Point(17, 34),
+                        scaledSize: new google.maps.Size(25, 25)
+                    };
+
+                    // Create a marker for each place.
+                    markers.push(new google.maps.Marker({
+                        map: map,
+                        icon: icon,
+                        title: place.name,
+                        position: place.geometry.location
+                    }));
+
+                    if (place.geometry.viewport) {
+                        // Only geocodes have viewport.
+                        bounds.union(place.geometry.viewport);
+                    } else {
+                        bounds.extend(place.geometry.location);
+                    }
+                });
+                $scope.map.fitBounds(bounds);
+            });*/
+        }, function(error) {
+            $ionicLoading.hide();
+            $ionicPopup.alert({
+                title: 'Could not get your location. Try again!',
+                scope: $scope
+            });
+            console.log("Could not get location");
+        });
+    }
+    getCurrentLocation();
+
+    $scope.confirm = function(category) {
+        $rootScope.$broadcast('POST_LOCATION_CHANGED', {args: $scope.location})
+        $ionicHistory.goBack();
+    };
+
+});

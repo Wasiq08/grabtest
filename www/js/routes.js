@@ -12,7 +12,7 @@ angular.module('app.routes', [])
             templateUrl: 'templates/sidemenu.html',
             abstract: true,
             controller: 'SideMenuCtrl',
-            onEnter: function($state, localStorageService) {
+            onEnter: function($state, localStorageService, $rootScope) {
                 if (!localStorageService.get('loggedInUser')) {
                     $state.go('login');
                 }
@@ -128,6 +128,12 @@ angular.module('app.routes', [])
         controller: 'UploadImageCtrl'
     })
 
+    .state('homelocation', {
+        url: '/homelocation',
+        templateUrl: 'templates/homelocation.html',
+        controller: 'HomeLocationCtrl'
+    })
+
     .state('welcome', {
         url: '/welcome',
         templateUrl: 'templates/welcome.html',
@@ -163,7 +169,7 @@ angular.module('app.routes', [])
     // $urlRouterProvider.otherwise('/main')
     //$urlRouterProvider.otherwise('/sidemenu/dashboard')
 
-    $urlRouterProvider.otherwise('/sidemenu/dashboard')
+    $urlRouterProvider.otherwise('/sidemenu/turn-on-location')
 
 
 });
