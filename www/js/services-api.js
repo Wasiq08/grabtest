@@ -146,6 +146,18 @@ angular.module('CoreApi', ['CoreApiUtilities'])
         return httpService.$http.post(url, params, config);
     }
 
+    this.insertHomeLocation = function(params, urlParams) {
+        var config = httpService.Utils.getHeader();
+        var url = httpService.Utils.buildUrl(new Array('location'), urlParams);
+        return httpService.$http.post(url, params, config);
+    }
+
+    this.insertCurrentLocation = function(params, urlParams) {
+        var config = httpService.Utils.getHeader();
+        var url = httpService.Utils.buildUrl(new Array('location'), urlParams);
+        return httpService.$http.post(url, params, config);
+    }
+
     this.getSuggestedTags = function(imageid) {
         var config = httpService.Utils.getHeader();
         var url = httpService.Utils.buildUrl(new Array('gcloud', 'tag', imageid));

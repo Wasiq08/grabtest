@@ -253,7 +253,17 @@ angular.module('app.services', [])
 })
 
 
-.service('CurrentLocationService', function($cordovaGeolocation, $q, Posts) {
+.service('CurrentLatLngService', [function () {
+    this._latLang = {};
+    this.save = function(latLang) {
+        this._latLang = latLang;
+    }
+    this.get = function() {
+        return this._latLang;
+    }
+}])
+
+.service('CurrentLocationService', function($cordovaGeolocation, $q, Posts, CurrentLatLngService, localStorageService) {
     this.get = function() {
         var defered = $q.defer();
         var posOptions = { timeout: 10000, enableHighAccuracy: false };
@@ -270,7 +280,8 @@ angular.module('app.services', [])
 
                 var geocoder = new google.maps.Geocoder();
                 var latlng = new google.maps.LatLng(lat, long);
-
+                localStorageService.set('currentLatLng', latlng);
+                CurrentLatLngService.save(latlng);
                 geocoder.geocode({ 'latLng': latlng }, function(results, status) {
                     if (status == google.maps.GeocoderStatus.OK) {
                         if (results[0]) {
@@ -285,7 +296,7 @@ angular.module('app.services', [])
                             arr[1] = lng;
                             loc.location = arr;
                             console.log(loc)
-                            Posts.insertLocation(loc).success(function(res) {
+                            Posts.insertCurrentLocation(loc, {loc: 'current_location'}).success(function(res) {
                                     console.log(res)
                                     defered.resolve(true)
                                 })

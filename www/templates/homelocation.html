@@ -13,8 +13,9 @@
             <div class="item item-input-inset">
                 <label class="item-input-wrapper" id="search-input">
                     <i class="icon ion-search placeholder-icon"></i>
-                    <input id="searchInput" type="text" placeholder="Search" ng-model="vm.location.formatted_address" ng-change="search()">
+                    <input id="searchInput" type="text" placeholder="Search" ng-model="location.formatted_address" ng-change="search()" style="width: 100%;">
                 </label>
+                <div ng-click="tryagain()">Try Again!</div>
             </div>
         </div>
         <div id="map"></div>

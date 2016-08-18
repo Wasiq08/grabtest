@@ -8,13 +8,16 @@
         </div>
         <!-- <h3 id="welcome-heading9" style="color:red;text-align:center;" class="ptl"><b>Grab-a-Bite!</b></h3> -->
         <p id="process-markdown16" style="color:pink;text-align:center;" class=" ">1/4</p>
-        <p class="ptl pll prl pbl" id="process-markdown6" style="color:white;" class="ft-16">What categories of food would you like to know about?</p>
-        <div class="pll prl pbl" >
-            <form id="process-form8" class="list ">
-                <ion-checkbox ng-repeat="cat in categories" ng-model="cat.checked">{{cat.text}}</ion-checkbox>
-            </form>
+        <p class="ptl pll prl pbl" id="process-markdown6" style="color:white;" class="ft-16">We would like to know your Residential Address. So that We inform you about deals when you are at home. </p>
+        <div id="search-bar">
+            <div class="item item-input-inset">
+                <label class="item-input-wrapper" id="search-input">
+                    <i class="icon ion-search placeholder-icon"></i>
+                    <input id="searchInput" type="text" placeholder="Search" ng-model="location.formatted_address" ng-change="search()" style="width: 100%;">
+                </label>
+            </div>
         </div>
-        <div on-tap="categoriesSelected()">
+        <div on-tap="next()">
             <div style="color: white; background-color: #ff6f29; ">
                 <p class="ptm pbm ft-14" style="text-align: center;"><b>Next</b></p>
             </div>

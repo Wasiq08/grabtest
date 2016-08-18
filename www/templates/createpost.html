@@ -12,11 +12,13 @@
     <ion-content>
         <div style="width: 100%; height: 240px;">
             <img ng-src="{{imageData}}" class="fd-img" style="z-index:10">
-            <div ng-if="isloading" class="loader" style="height:20px; width:20px; z-index: 1000;margin-top: -135px;    border: 2px solid #f3f3f3;
+            <div ng-if="isloading && loadedvalue > 0" class="loader" style="height:20px; width:20px; z-index: 1000;margin-top: -135px;    border: 2px solid #f3f3f3;
     border-radius: 50%;
     border-top: 2px solid #3498db;">
             </div>
-            <div ng-if="isloading" style="margin-left:auto;margin-right:auto; z-index:1000; text-align:center;">{{loadedvalue}} %</div>
+            <div ng-if="isloading  && loadedvalue > 0" style="margin-left:auto;margin-right:auto; z-index:1000; text-align:center;">{{loadedvalue}} % </div>
+            <div ng-click="uploadpostimage()" ng-if="isloading  && loadedvalue <= 0" style="height:20px; width:20px; z-index: 1000;margin-top: -135px; margin-right:auto; margin-left:auto;"><span class="ft-32"><i class="ion-camera"></i></span>
+            </div>
         </div>
         <div style="width: 90%; height: 100px; position: relative; border-bottom-style: solid; border-bottom-width: thin; border-bottom-color:  rgba(0,0,0,0.3) ; margin-left: 5%; margin-top: 10px;">
             <div style="position: absolute; width: 80px; height: 80px; padding: 10px;">
@@ -26,7 +28,7 @@
                 <textarea style="width: 100%; height: 65px;" placeholder="Write your review here!" ng-model="final_obj.remark"></textarea>
             </div>
         </div>
-        <div  class="ptm plm prm pbm" style="margin-left: 5%;width: 90%;border-bottom-style: solid; border-bottom-width: thin; border-bottom-color:  rgba(0,0,0,0.1) ;">
+        <div ng-if="$root.hashtags.length > 0" class="ptm plm prm pbm" style="margin-left: 5%;width: 90%;border-bottom-style: solid; border-bottom-width: thin; border-bottom-color:  rgba(0,0,0,0.1) ;">
             <p><b><i class="ion-pound"></i><span on-tap="selectCategoryOption()" ng-if="$root.hashtags.length == 0" class="plm">Add Tags</span><span ng-if="$root.hashtags.length != 0" class="fd-chips" ng-repeat="tag in $root.hashtags" style="margin: 0px 0px 0px 10px;">{{tag.desc || tag }} <span ng-click="removeTags($index)"><i class="ion-close"></i></span> </span> <span on-tap="selectCategoryOption()" ng-if="$root.hashtags.length != 0">Add More</span></b></p>
         </div>
         <div on-tap="selectLocation()" class="ptm plm prm pbm" style="margin-left: 5%;width: 90%;border-bottom-style: solid; border-bottom-width: thin; border-bottom-color: rgba(0,0,0,0.1) ;">

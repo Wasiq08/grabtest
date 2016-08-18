@@ -30,7 +30,8 @@ angular.module('app.controllers', [])
                     localStorageService.set("auth_token", res.data.auth.token);
                     localStorageService.set("loggedInUser", res.data.auth.user);
                     $rootScope.user = localStorageService.get("loggedInUser");
-                    //$rootScope.$broadcast('User_changed', {user: localStorageService.get("loggedInUser")})
+                    console.log("in login", localStorageService.get("loggedInUser"))
+                        //$rootScope.$broadcast('User_changed', {user: localStorageService.get("loggedInUser")})
                     if (res.data.auth.user.on_boarding == 0) {
                         $scope.hide();
                         $state.go('welcome')
@@ -198,6 +199,7 @@ angular.module('app.controllers', [])
     $scope.hide = function() {
         $ionicLoading.hide()
     };
+    $scope.loadedvalue = 0.0;
 
     $scope.isLoading = false;
     $scope.addImage = function() {
@@ -275,7 +277,8 @@ angular.module('app.controllers', [])
                                 // Error
                             }, function(progress) {
                                 console.log("progress", progress)
-                                    // constant progress updates
+                                var value = ((progress.loaded / progress.total) * 100).toString().split(".")[0];
+                                $scope.loadedvalue = value;
                             });
                         //$rootScope.imageData = "data:image/jpeg;base64," + imageData;
                         //$state.go('sidemenu.imagefilter');
@@ -357,8 +360,40 @@ angular.module('app.controllers', [])
         })
 })
 
-.controller('process1Ctrl', function($scope, $state, User) {
-    $scope.final_obj = {};
+.controller('process1Ctrl', function($scope, $state, User, Posts, $rootScope) {
+
+
+
+    $scope.final_obj = {
+        q_step_out: '',
+        q_grocery_shopping: '',
+        q_radius: ''
+    };
+
+    $scope.categories = []
+    Posts.getCategories().success(function(res) {
+            //$scope.categories = res.data
+            for (var i = 0; i < res.data.length; i++) {
+                $scope.categories.push({ text: res.data[i].category_name, checked: false, value: res.data[i]._id })
+            }
+
+        })
+        .error(function(err) {
+            console.log(err)
+        })
+
+    $scope.categoriesSelected = function() {
+
+        $rootScope.category = [];
+        for (var i = 0; i < $scope.categories.length; i++) {
+            if ($scope.categories[i].checked) {
+                $rootScope.category.push($scope.categories[i].text)
+            }
+        }
+
+        //console.log($scope.final_obj)
+        $state.go('process1')
+    }
     $scope.clientSideList = [
         { text: "How often do you step out to eat?", value: "How often do you step out to eat?" },
         { text: "Everyday of the Week!!", value: "Everyday of the Week!!" },
@@ -384,11 +419,10 @@ angular.module('app.controllers', [])
     };
 
     $scope.clientSideList3 = [
-        { text: "To the end of block", value: "To the end of block" },
-        { text: "0.25 Miles", value: "0.25 Miles" },
-        { text: "0.5 - 1 Miles", value: "0.5 - 1 Miles" },
-        { text: "1 - 2.5 Miles", value: "1 - 2.5 Miles" },
-        { text: "I don't do grocery", value: "2.5 - 5 Miles" }
+        { text: "Lazy Monger 0-1 Miles", value: "1" },
+        { text: "Active Monger 1-5 miles", value: "5" },
+        { text: "Straight Up Monger up to 10 miles", value: "10" },
+        { text: "I don't do grocery", value: "20" }
     ];
 
     $scope.data3 = {
@@ -397,20 +431,27 @@ angular.module('app.controllers', [])
 
     $scope.submit = function() {
         console.log($scope.data.clientSide)
-        $scope.final_obj.q_step_out = $scope.data.clientSide;
+        $rootScope.q_step_out = $scope.data.clientSide;
+        console.log($scope.final_obj)
         $state.go('process2')
     }
 
     $scope.submit2 = function() {
-        $scope.final_obj.q_grocery_shopping = $scope.data2.clientSide;
+        //$scope.final_obj.q_step_out = $scope.data.clientSide;
+        $rootScope.q_grocery_shopping = $scope.data2.clientSide;
+        console.log($scope.final_obj)
         $state.go('process3')
     }
 
     $scope.submit3 = function() {
-        $scope.final_obj.q_radius = $scope.data3.clientSide;
+        $scope.final_obj.q_step_out = $rootScope.q_step_out;
+        $scope.final_obj.q_grocery_shopping = $rootScope.q_grocery_shopping;
+        $scope.final_obj.radius = $scope.data3.clientSide;
+        $scope.final_obj.category = $rootScope.category;
+        console.log($scope.final_obj)
         User.consumer_answers($scope.final_obj)
             .success(function(res) {
-                $state.go('sidemenu.dashboard')
+                $state.go('sidemenu.turn-on-location')
             })
             .error(function(err) {
 
@@ -535,19 +576,24 @@ angular.module('app.controllers', [])
     }
 })
 
-.controller('dashboardCtrl', function($rootScope, Markers, $cordovaFile, $ionicPopup, $ionicHistory, $ionicPopover, ImageService, $ionicLoading, localStorageService, $scope, Posts, $cordovaFileTransfer, $cordovaCamera, $state, $ionicModal, $cordovaGeolocation) {
+.controller('dashboardCtrl', function($rootScope, $cordovaSocialSharing, CurrentLatLngService, Markers, $cordovaFile, $ionicPopup, $ionicHistory, $ionicPopover, ImageService, $ionicLoading, localStorageService, $scope, Posts, $cordovaFileTransfer, $cordovaCamera, $state, $ionicModal, $cordovaGeolocation) {
     console.log("in dashboard ctrl");
+    $scope.currentlocation = true;
+    $scope.homelocation = false;
+
     $scope.filterlocation = "orange"
-    $scope.filterprice = "white"
+    $scope.filterprice = "white";
+    $scope.allFeedFilter = "white";
+    $scope.locationfiltervalue = "current_location";
     $scope.minRangeSlider = {
-        minValue: 10,
-        maxValue: 800,
+        minValue: 2,
+        maxValue: 19,
         options: {
             floor: 0,
-            ceil: 1000,
-            step: 1,
+            ceil: 20,
+            step: 2,
             translate: function(value) {
-                return '$' + value;
+                return value + 'km';
             }
         }
     };
@@ -569,6 +615,7 @@ angular.module('app.controllers', [])
 
         $scope.filterlocation = "white"
         $scope.filterprice = "orange"
+        $scope.allFeedFilter = "white";
     }
 
     $scope.priceFilter = function() {
@@ -578,126 +625,47 @@ angular.module('app.controllers', [])
     }
 
     $scope.locationFilter = function() {
-        $scope.filterlocation = "orange"
-        $scope.filterprice = "white"
-        cordova.plugins.diagnostic.requestLocationAuthorization(function(status) {
-            switch (status) {
-                case cordova.plugins.diagnostic.permissionStatus.NOT_REQUESTED:
-                    console.log("Permission not requested");
-                    break;
-                case cordova.plugins.diagnostic.permissionStatus.GRANTED:
-                    cordova.plugins.diagnostic.isLocationEnabled(function(enabled) {
-                        console.log("Location setting is " + (enabled ? "enabled" : "disabled"));
-                        if (!enabled) {
-                            var confirmPopup = $ionicPopup.confirm({
-                                title: 'Your device GPS is off. Do you want turn on your GPS settings?'
-                            });
-
-                            confirmPopup.then(function(res) {
-                                if (res) {
-
-                                    cordova.plugins.diagnostic.switchToLocationSettings();
-                                } else {
-                                    console.log('You are not sure');
-                                }
-                            });
-                        } else {
-                            $ionicLoading.show({
-                                template: 'Please wait!',
-                                duration: 10000
-                            })
-                            var posOptions = { timeout: 10000, enableHighAccuracy: false };
-                            $cordovaGeolocation
-                                .getCurrentPosition(posOptions)
-                                .then(function(position) {
-
-                                    console.log("position is", position);
-                                    //24.876852, 67.062625
-                                    var lat = position.coords.latitude;
-                                    var long = position.coords.longitude;
-                                    console.log(lat);
-                                    console.log(long);
-
-                                    var geocoder = new google.maps.Geocoder();
-                                    var latlng = new google.maps.LatLng(lat, long);
-
-                                    geocoder.geocode({ 'latLng': latlng }, function(results, status) {
-                                        if (status == google.maps.GeocoderStatus.OK) {
-                                            if (results[0]) {
-                                                //$scope.final_obj.location = results[1];
-                                                console.log("result is ", results); // details address
-                                                $scope.loc = {};
-                                                $scope.loc.location_name = results[0].formatted_address;
-                                                var lat = results[1].geometry.location.lat();
-                                                var lng = results[1].geometry.location.lng()
-                                                var arr = [];
-                                                arr[0] = lat;
-                                                arr[1] = lng;
-                                                $scope.loc.location = arr;
-                                                console.log($scope.loc)
-                                                Posts.insertLocation($scope.loc).success(function(res) {
-                                                        console.log(res)
-                                                        $ionicLoading.hide();
-                                                        $scope.modal.hide();
-                                                        $scope.doRefresh();
-                                                    })
-                                                    .error(function(err) {
-                                                        console.log(err)
-                                                    })
-                                                    //$scope.data.address = results[1].formatted_address;
-
-                                                //$scope.locationChanged(results[1].formatted_address)
-                                            } else {
-                                                console.log('Location not found');
-                                            }
-                                        } else {
-                                            console.log('Geocoder failed due to: ' + status);
-                                        }
-                                    }, function(err) {
-                                        console.log("in error", err)
-                                    });
-                                }, function(err) {
-                                    // error
-                                });
-                        }
-                    }, function(error) {
-                        console.error("The following error occurred: " + error);
-
-                    });
-                    break;
-                case cordova.plugins.diagnostic.permissionStatus.DENIED:
-                    console.log("Permission denied");
-                    break;
-                case cordova.plugins.diagnostic.permissionStatus.DENIED_ALWAYS:
-                    console.log("Permission permanently denied");
-                    break;
-            }
-        }, function(error) {
-            console.error(error);
-        });
+        $scope.filterlocation = "orange";
+        $scope.filterprice = "white";
+        $scope.allFeedFilter = "white";
+        $scope.doRefresh();
     }
-    console.log($rootScope.isLocationEnabled)
+
+    $scope.selectAllFeed = function() {
+        $scope.filterlocation = "white";
+        $scope.filterprice = "white";
+        $scope.allFeedFilter = "orange";
+        $scope.doRefresh();
+    }
+
     $scope.feeds = []
     var page = offset = 0;
     var limit = 5;
     var uid = localStorageService.get('loggedInUser')._id;
-
+    // var currentLatLng = localStorageService.get('currentLatLng');
+    //var currentLatLng = new google.maps.LatLng(currentLatLng.lat, currentLatLng.lng);
     $scope.noMoreFeedContent = false;
     $scope.getDashboardFeed = function(start) {
+
+        //console.log("current lat lng", currentLatLng)
         var _start = start || false;
         console.log("start ", _start)
         var params = {}
         if ($scope.filterprice == "orange") {
             params.offset = offset;
             params.limit = limit;
-            params.price = 'price';
-            params.p = $scope.minRangeSlider.maxValue;
+            params.loc = $scope.locationfiltervalue
+            params.r = $scope.minRangeSlider.maxValue;
+        } else if ($scope.filterlocation == "orange") {
+            params.offset = offset;
+            params.limit = limit;
+            params.loc = $scope.locationfiltervalue
         } else {
             params.offset = offset;
             params.limit = limit;
-            params.loc = 'location'
         }
         console.log("params", params)
+            //console.log(google.maps.geometry.spherical.computeDistanceBetween(markerPos, $scope.latLng));
         Posts.getAllFeeds(params).success(function(res) {
                 if (_start) {
                     $scope.feeds = [];
@@ -710,15 +678,21 @@ angular.module('app.controllers', [])
                 console.log(res.data.length)
 
                 for (var i = 0; i < res.data.length; i++) {
-                    $scope.feeds.push(res.data[i]);
+                    var markerPos = new google.maps.LatLng(res.data[i].feed.location[0], res.data[i].feed.location[1]);
+                    var currentLatLng = new google.maps.LatLng(res.data[i].location.location[0], res.data[i].location.location[1])
+                    var distance = google.maps.geometry.spherical.computeDistanceBetween(markerPos, currentLatLng) / 1000;
+                    res.data[i].distance = distance.toFixed(2);
                     Markers.put(res.data[i]);
                     for (var j = 0; j < res.data[i].feed.likes.length; j++) {
                         if (uid == res.data[i].feed.likes[j].user) {
-                            $scope.feeds[i].isLiked = true;
+                            res.data[i].isLiked = true;
                         } else {
-                            $scope.feeds[i].isLiked = false;
+                            res.data[i].isLiked = false;
                         }
                     }
+                    $scope.feeds.push(res.data[i]);
+                    console.log("in for", $scope.feeds[i].distance)
+
                 }
 
                 console.log($scope.feeds)
@@ -746,6 +720,20 @@ angular.module('app.controllers', [])
 
     }
 
+    $scope.getCurrentLocationFeed = function() {
+        $scope.currentlocation = true;
+        $scope.homelocation = false;
+        $scope.locationfiltervalue = "current_location";
+        $scope.doRefresh();
+    }
+
+    $scope.getHomeLocationFeed = function() {
+        $scope.currentlocation = false;
+        $scope.homelocation = true;
+        $scope.locationfiltervalue = "home_location";
+        $scope.doRefresh();
+    }
+
     $rootScope.$on('POST_CREATED', function(event, args) {
         //$scope.feeds.unshift(args.post)
         $scope.doRefresh();
@@ -755,32 +743,44 @@ angular.module('app.controllers', [])
         console.log("index in on", args.ind)
         $scope.feeds.splice(args.ind, 1)
     })
+    $scope.socialSharing = function(feed) {
+        console.log(feed)
+        $cordovaSocialSharing
+            .share(feed.feed.remark, "Food Monger Update!", feed.feed.media[0].medium, null) // Share via native share sheet
+            .then(function(result) {
+                // Success!
+            }, function(err) {
+                // An error occured. Show a message to the user
+            });
 
+        //$cordovaSocialSharing.share('feed.feed.remark', null, 'feed.feed.media[0].medium', null)
+    }
     $scope.getpicture = function() {
-        var options = {
-            quality: 100,
-            destinationType: Camera.DestinationType.DATA_URL,
-            sourceType: Camera.PictureSourceType.CAMERA,
-            allowEdit: false,
-            encodingType: Camera.EncodingType.JPEG,
-            popoverOptions: CameraPopoverOptions,
-            saveToPhotoAlbum: false,
-            correctOrientation: true
-        };
+        $state.go('sidemenu.createpost');
+        // var options = {
+        //     quality: 100,
+        //     destinationType: Camera.DestinationType.DATA_URL,
+        //     sourceType: Camera.PictureSourceType.CAMERA,
+        //     allowEdit: false,
+        //     encodingType: Camera.EncodingType.JPEG,
+        //     popoverOptions: CameraPopoverOptions,
+        //     saveToPhotoAlbum: false,
+        //     correctOrientation: true
+        // };
 
-        $cordovaCamera.getPicture(options).then(function(imagedata) {
+        // $cordovaCamera.getPicture(options).then(function(imagedata) {
 
-            $scope.imageData = "data:image/jpeg;base64," + imagedata;
+        //     $scope.imageData = "data:image/jpeg;base64," + imagedata;
 
-            //$rootScope.postimagedata = imagedata;
-            $rootScope.postimagedata = "data:image/jpeg;base64," + imagedata;
-            $state.go('sidemenu.createpost');
+        //     //$rootScope.postimagedata = imagedata;
+        //     $rootScope.postimagedata = "data:image/jpeg;base64," + imagedata;
+        //     $state.go('sidemenu.createpost');
 
-            //var image = document.getElementById('myImage');
-            //image.src = "data:image/jpeg;base64," + imageData;
-        }, function(err) {
-            // error
-        });
+        //     //var image = document.getElementById('myImage');
+        //     //image.src = "data:image/jpeg;base64," + imageData;
+        // }, function(err) {
+        //     // error
+        // });
     }
 
     $scope.navigateToFoodPost = function(postid) {
@@ -791,89 +791,98 @@ angular.module('app.controllers', [])
         $state.go('sidemenu.profile', { id: uid })
     }
 
-    // .fromTemplateUrl() method
-    $ionicPopover.fromTemplateUrl('templates/partials/popover.html', {
-        scope: $scope
-    }).then(function(popover) {
-        $scope.popover = popover;
-    });
-
-
-    $scope.openPopover = function($event) {
-        $scope.popover.show($event);
-    };
-    $scope.closePopover = function() {
-        $scope.popover.hide();
-    };
-    //Cleanup the popover when we're done with it!
-    $scope.$on('$destroy', function() {
-        $scope.popover.remove();
-    });
-    // Execute action on hide popover
-    $scope.$on('popover.hidden', function() {
-        // Execute action
-    });
-    // Execute action on remove popover
-    $scope.$on('popover.removed', function() {
-        // Execute action
-    });
-
 })
 
-.controller('CreatePostCtrl', function($scope, $cordovaFile, $cordovaFileTransfer, localStorageService, appModalService, Posts, $rootScope, ImageService, $cordovaGeolocation, $ionicHistory, $state, $ionicPopup) {
+.controller('CreatePostCtrl', function($scope, $cordovaFile, $cordovaCamera, $cordovaFileTransfer, localStorageService, appModalService, Posts, $rootScope, ImageService, $cordovaGeolocation, $ionicHistory, $state, $ionicPopup) {
     $scope.imgobj = ImageService.getImage();
     $scope.final_obj = {};
     $scope.isloading = true;
     $scope.loadedvalue = 0.0;
-    var imageData = $rootScope.postimagedata;
-    //$scope.imageData = 'img/dessert.jpg'; 
-    //$scope.final_obj.location = {"lon":51.12076493195686,"lat":-113.98040771484375};
-    try {
-        var options = {
-            fileKey: "uploadfile",
-            fileName: imageData.substr(imageData.lastIndexOf('/') + 1),
-            chunkedMode: false,
-            mimeType: "image/jpg",
-            headers: {
-                'x-access-token': localStorageService.get("auth_token")
-            }
-        };
-        //$scope.show();
-        $cordovaFileTransfer.upload('http://162.243.119.60:3000/upload/image?imageof=post', imageData, options)
-            .then(function(res) {
-                $scope.finalImage = JSON.parse(res.response);
-                $scope.imageData = $scope.finalImage.data.file[0].medium;
-                $scope.isloading = false;
-                $scope.final_obj.post_image_id = $scope.finalImage.data.fileId;
-                Posts.getSuggestedTags($scope.final_obj.post_image_id).success(function(result) {
-                    console.log(result)
-                    $scope.final_obj.tag = result.data;
-                    $scope.hashtags = result.data;
-                    $rootScope.hashtags = result.data;
-                })
 
+    function upload() {
+        try {
+            // $scope.getpicture = function() {
+            var options = {
+                quality: 100,
+                destinationType: Camera.DestinationType.FILE_URI,
+                sourceType: Camera.PictureSourceType.CAMERA,
+                allowEdit: false,
+                encodingType: Camera.EncodingType.JPEG,
+                popoverOptions: CameraPopoverOptions,
+                saveToPhotoAlbum: false,
+                correctOrientation: true
+            };
+
+            $cordovaCamera.getPicture(options).then(function(imagedata) {
+
+                // $scope.imageData = "data:image/jpeg;base64," + imagedata;
+
+                $rootScope.postimagedata = imagedata;
+                //$rootScope.postimagedata = "data:image/jpeg;base64," + imagedata;
+                var imageData = $rootScope.postimagedata;
+
+                var options = {
+                    fileKey: "uploadfile",
+                    fileName: imageData.substr(imageData.lastIndexOf('/') + 1),
+                    chunkedMode: false,
+                    mimeType: "image/jpg",
+                    headers: {
+                        'x-access-token': localStorageService.get("auth_token")
+                    }
+                };
+                //$scope.show();
+                $cordovaFileTransfer.upload('http://162.243.119.60:3000/upload/image?imageof=post', imageData, options)
+                    .then(function(res) {
+                        $scope.finalImage = JSON.parse(res.response);
+                        $scope.imageData = $scope.finalImage.data.file[0].medium;
+                        $scope.isloading = false;
+                        $scope.final_obj.post_image_id = $scope.finalImage.data.fileId;
+                        Posts.getSuggestedTags($scope.final_obj.post_image_id).success(function(result) {
+                            console.log(result)
+                            $scope.final_obj.tag = result.data;
+                            $scope.hashtags = result.data;
+                            $rootScope.hashtags = result.data;
+                        })
+
+                    }, function(err) {
+                        console.log(err)
+                        $scope.isloading = false;
+                        //$scope.hide();
+                        // Error
+                    }, function(progress) {
+
+                        var value = ((progress.loaded / progress.total) * 100).toString().split(".")[0];
+                        //var a = 12345.67;
+
+                        //alert(value.toString().split(".")[0]); ///before
+                        //alert(value.toString().split(".")[1]); ///after
+                        $scope.loadedvalue = value;
+                        //console.log(value)
+                        // constant progress updates
+                    });
+
+                //$state.go('sidemenu.createpost');
+
+                //var image = document.getElementById('myImage');
+                //image.src = "data:image/jpeg;base64," + imageData;
             }, function(err) {
-                console.log(err)
-                $scope.isloading = false;
-                //$scope.hide();
-                // Error
-            }, function(progress) {
-
-                var value = ((progress.loaded / progress.total) * 100).toString().split(".")[0];
-                //var a = 12345.67;
-
-                //alert(value.toString().split(".")[0]); ///before
-                //alert(value.toString().split(".")[1]); ///after
-                $scope.loadedvalue = value;
-                //console.log(value)
-                // constant progress updates
+                // error
             });
-    } catch (err) {
+            // }
+        } catch (err) {
 
+        }
     }
 
-    $scope.final_obj.loc_name = "Add Location";
+    //$scope.imageData = 'img/dessert.jpg'; 
+    //$scope.final_obj.location = {"lon":51.12076493195686,"lat":-113.98040771484375};
 
+
+    $scope.final_obj.loc_name = "Add Location";
+    upload();
+    $scope.uploadpostimage = function() {
+        upload();
+    }
 
     Posts.getCategories().success(function(res) {
             console.log(res);
@@ -887,7 +896,7 @@ angular.module('app.controllers', [])
     $scope.selectCategory.category_name = "Fruits";
 
     $scope.final_obj.category = "Fruits";
-    $scope.final_obj.price = 30;
+    //$scope.final_obj.price = 30;
     $scope.final_obj.remark = "";
 
     $scope.getCurrentPostion = function() {
@@ -964,8 +973,15 @@ angular.module('app.controllers', [])
         // })
     }
 
-    $rootScope.$on('POST_LOCATION_CHANGED', function(event,args) {
+    $rootScope.$on('POST_LOCATION_CHANGED', function(event, args) {
         console.log(args)
+        var lat = args.args.geometry.location.lat();
+        var lng = args.args.geometry.location.lng()
+        var arr = [];
+        arr[0] = lat;
+        arr[1] = lng;
+        $scope.final_obj.location = arr;
+        $scope.final_obj.loc_name = args.args.formatted_address;
     })
 
     $scope.creatPost = function() {
@@ -1224,7 +1240,7 @@ angular.module('app.controllers', [])
         })
 })
 
-.controller('TurnLocationCtrl', function($scope, $ionicPlatform, $ionicPopup, CurrentLocationService, $state, $rootScope) {
+.controller('TurnLocationCtrl', function($scope, $ionicPlatform, $ionicPopup, CurrentLocationService, $state, $rootScope, $ionicLoading) {
     console.log("in turn on location")
     $scope.isLoading = true;
     $ionicPlatform.ready(function() {
@@ -1254,7 +1270,9 @@ angular.module('app.controllers', [])
                     })
                     //$state.go('sidemenu.dashboard');
             } else {
+
                 $scope.isLoading = false;
+                console.log("in else", $scope.isLoading)
             }
         }, function(error) {
             //return error;
@@ -1265,66 +1283,114 @@ angular.module('app.controllers', [])
     });
 
     $scope.turnOn = function() {
-        if ($scope.enable) {
-            $scope.isLoading = true;
-            CurrentLocationService.get().then(function(res) {
-                console.log("in turn on then", res)
-                if (res == true) {
-                    $state.go('sidemenu.dashboard');
-                    $scope.isLoading = false;
+        cordova.plugins.diagnostic.isLocationEnabled(function(enabled) {
+                //return enabled; 
+                console.log("Location setting is " + (enabled ? "enabled" : "disabled"));
+                $scope.enable = enabled;
+                if (enabled) {
+                    $ionicLoading.show({
+                        template: 'We are getting your location. Please Wait!'
+                    })
+                    CurrentLocationService.get().then(function(res) {
+                            console.log("in turn on then", res)
+
+                            if (res == true) {
+                                $ionicLoading.hide();
+                                $state.go('sidemenu.dashboard');
+                                $scope.isLoading = false;
+                            } else {
+                                $ionicLoading.hide();
+                                $scope.isLoading = false;
+                            }
+                        }, function(err) {
+                            $ionicLoading.hide();
+                            $scope.isLoading = false;
+                            console.log("in turn on err", err)
+                            $ionicPopup.alert({
+                                title: 'Could not get Location. Please try again!',
+                                scope: $scope
+                            });
+                        })
+                        //$state.go('sidemenu.dashboard');
                 } else {
                     $scope.isLoading = false;
+                    var confirmPopup = $ionicPopup.confirm({
+                        title: 'Your device GPS is off. Do you want turn on your GPS settings?'
+                    });
+
+                    confirmPopup.then(function(res) {
+                        if (res) {
+
+                            cordova.plugins.diagnostic.switchToLocationSettings();
+                        } else {
+                            console.log('You are not sure');
+                        }
+                    });
                 }
-            }, function(err) {
-                $scope.isLoading = false;
-                console.log("in turn on err", err)
-                $ionicPopup.alert({
-                    title: 'Could not get Location. Please try again!',
-                    scope: $scope
-                });
+            }, function(error) {
+                //return error;
+                //console.error("The following error occurred: " + error);
             })
-        } else {
-            $scope.isLoading = true;
-            cordova.plugins.diagnostic.switchToLocationSettings();
-            $ionicPlatform.on('pause', function(res) {
-                console.log("in pause callback", res)
+            // if ($scope.enable) {
+            //     $scope.isLoading = true;
+            //     CurrentLocationService.get().then(function(res) {
+            //         console.log("in turn on then", res)
+            //         if (res == true) {
+            //             $state.go('sidemenu.dashboard');
+            //             $scope.isLoading = false;
+            //         } else {
+            //             $scope.isLoading = false;
+            //         }
+            //     }, function(err) {
+            //         $scope.isLoading = false;
+            //         console.log("in turn on err", err)
+            //         $ionicPopup.alert({
+            //             title: 'Could not get Location. Please try again!',
+            //             scope: $scope
+            //         });
+            //     })
+            // } else {
+            //     //$scope.isLoading = true;
+            //     cordova.plugins.diagnostic.switchToLocationSettings();
+            //     // $ionicPlatform.on('pause', function(res) {
+            //     //     console.log("in pause callback", res)
 
-            })
-            $ionicPlatform.on('resume', function(res) {
+        //     // })
+        //     // $ionicPlatform.on('resume', function(res) {
 
 
-                console.log("in resume callback", $scope.isLoading)
-                cordova.plugins.diagnostic.isLocationEnabled(function(enabled) {
-                    //return enabled;  
-                    console.log("Location setting is " + (enabled ? "enabled" : "disabled"));
-                    $scope.enable = enabled;
-                    if (enabled) {
-                        CurrentLocationService.get().then(function(res) {
-                                console.log("in turn on then", res)
-                                if (res == true) {
-                                    $state.go('sidemenu.dashboard');
-                                    $scope.isLoading = false;
-                                } else {
-                                    $scope.isLoading = false;
-                                }
-                            }, function(err) {
-                                $scope.isLoading = false;
-                                console.log("in turn on err", err)
-                                $ionicPopup.alert({
-                                    title: 'Could not get Location. Please try again!',
-                                    scope: $scope
-                                });
-                            })
-                            //$state.go('sidemenu.dashboard');
-                    } else {
-                        $scope.isLoading = false;
-                    }
-                }, function(error) {
-                    //return error;
-                    //console.error("The following error occurred: " + error);
-                })
-            })
-        }
+        //     //     console.log("in resume callback", $scope.isLoading)
+        //     //     cordova.plugins.diagnostic.isLocationEnabled(function(enabled) {
+        //     //         //return enabled;  
+        //     //         console.log("Location setting is " + (enabled ? "enabled" : "disabled"));
+        //     //         $scope.enable = enabled;
+        //     //         if (enabled) {
+        //     //             CurrentLocationService.get().then(function(res) {
+        //     //                     console.log("in turn on then", res)
+        //     //                     if (res == true) {
+        //     //                         $state.go('sidemenu.dashboard');
+        //     //                         $scope.isLoading = false;
+        //     //                     } else {
+        //     //                         $scope.isLoading = false;
+        //     //                     }
+        //     //                 }, function(err) {
+        //     //                     $scope.isLoading = false;
+        //     //                     console.log("in turn on err", err)
+        //     //                     $ionicPopup.alert({
+        //     //                         title: 'Could not get Location. Please try again!',
+        //     //                         scope: $scope
+        //     //                     });
+        //     //                 })
+        //     //                 //$state.go('sidemenu.dashboard');
+        //     //         } else {
+        //     //             $scope.isLoading = false;
+        //     //         }
+        //     //     }, function(error) {
+        //     //         //return error;
+        //     //         //console.error("The following error occurred: " + error);
+        //     //     })
+        //     // })
+        // }
 
     }
 })
@@ -1838,7 +1904,7 @@ angular.module('app.controllers', [])
 
 })
 
-.controller('HomeLocationCtrl', function($scope, $ionicLoading, $ionicPopup, HSSearch, $timeout, $cordovaGeolocation, $ionicHistory , $rootScope) {
+.controller('HomeLocationCtrl', function($scope, $ionicLoading, $ionicPopup, HSSearch, $timeout, $cordovaGeolocation, $ionicHistory, $rootScope) {
     console.log("helloooooo")
     $scope.location = {};
     var HSSearch = {
@@ -1886,6 +1952,25 @@ angular.module('app.controllers', [])
                 (document.getElementById('searchInput')), { types: ['geocode'] });
             // When the user selects an address from the dropdown,
             // do search
+            // HSSearch.autocomplete.addListener('places_changed', function() {
+            //         var places = HSSearch.autocomplete.getPlaces();
+            //         $scope.location = places[0];
+
+            //         var latLng = new google.maps.LatLng(places[0].geometry.location.lat(), places[0].geometry.location.lng());
+
+            //         var mapOptions = {
+            //             center: latLng,
+            //             zoom: 15,
+            //             mapTypeId: google.maps.MapTypeId.ROADMAP
+            //         };
+
+            //         $scope.map = new google.maps.Map(document.getElementById("map"), mapOptions);
+            //         var marker = new google.maps.Marker({
+            //             position: latLng,
+            //             map: $scope.map,
+            //             title: 'Hello World!'
+            //         });
+            //     })
             google.maps.event.addListener(HSSearch.autocomplete, 'place_changed', function() {
                 HSSearch.fillInAddress();
             });
@@ -1894,36 +1979,14 @@ angular.module('app.controllers', [])
         fillInAddress: function() {
             // Get the place details from the autocomplete object.
             var place = HSSearch.autocomplete.getPlace();
-
-            // Get place lat/lon
+            console.log('place')
+                // Get place lat/lon
             var params = {};
             params["lat"] = place.geometry.location.d;
             params["lon"] = place.geometry.location.e;
             params["full"] = $("#stormSearchInput").val();
             console.log(place)
-
-            // Get each component of the address from the place details
-            for (var i = 0; i < place.address_components.length; i++) {
-                var addressType = place.address_components[i].types[0];
-                if (HSSearch.labelConversion[addressType]) {
-                    var lbl = HSSearch.labelConversion[addressType];
-                    params[lbl] = place.address_components[i][HSSearch.componentForm[addressType]];
-                }
-            }
-
-            console.log(params);
-        }
-    };
-
-    // $timeout(function() { HSSearch.init(); }, 1000);
-    var getCurrentLocation = function() {
-        $ionicLoading.show({
-            template: 'Please Wait!'
-        })
-        var options = { timeout: 10000, enableHighAccuracy: true };
-        $cordovaGeolocation.getCurrentPosition(options).then(function(position) {
-
-            var latLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+            var latLng = new google.maps.LatLng(place.geometry.location.lat(), place.geometry.location.lng());
 
             var mapOptions = {
                 center: latLng,
@@ -1931,120 +1994,156 @@ angular.module('app.controllers', [])
                 mapTypeId: google.maps.MapTypeId.ROADMAP
             };
 
-            var geocoder = new google.maps.Geocoder();
-            geocoder.geocode({
-                'latLng': latLng
-            }, function(results, status) {
-                if (status == google.maps.GeocoderStatus.OK) {
-                    console.log("status", results[0].geometry.location.lat(), results[0].geometry.location.lng())
-
-                    $scope.location = results[0];
-                    //document.getElementById('pac-input').text = "ABC"
-                    $ionicLoading.hide();
-                    $ionicPopup.alert({
-                        title: 'Your location is ' + $scope.location.formatted_address,
-                        scope: $scope
-                    });
-                    // var latLng = new google.maps.LatLng(results[0].geometry.location.lat(), results[0].geometry.location.lng());
-
-                    // var mapOptions = {
-                    //     center: latLng,
-                    //     zoom: 15,
-                    //     mapTypeId: google.maps.MapTypeId.ROADMAP
-                    // };
-
-                    // $scope.map = new google.maps.Map(document.getElementById("map"), mapOptions);
-                    //vm.location = results[0];
-                    //$q.resolve(results);
-                } else {
-                    //$q.reject();
-                }
-            });
-
+            $scope.location = place;
             $scope.map = new google.maps.Map(document.getElementById("map"), mapOptions);
             var marker = new google.maps.Marker({
                 position: latLng,
                 map: $scope.map,
                 title: 'Hello World!'
             });
-            HSSearch.init();
-            /*$scope.map.addListener('bounds_changed', function() {
-                searchBox.setBounds($scope.map.getBounds());
-            });*/
+        }
+    };
 
-            /*$scope.map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
-            var input = document.getElementById('pac-input');
-            var searchBox = new google.maps.places.SearchBox(input);
-            var markers = [];*/
+    var getCurrentLocation = function() {
+            $ionicLoading.show({
+                template: 'Please Wait!'
+            })
+            var options = { timeout: 10000, enableHighAccuracy: true };
+            $cordovaGeolocation.getCurrentPosition(options).then(function(position) {
 
-            /*searchBox.addListener('places_changed', function() {
-                var places = searchBox.getPlaces();
-                console.log("places", places)
-                var latLng = new google.maps.LatLng(places[0].geometry.location.lat(), places[0].geometry.location.lng());
+                var latLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
 
-                // var mapOptions = {
-                //     center: latLng,
-                //     zoom: 15,
-                //     mapTypeId: google.maps.MapTypeId.ROADMAP
-                // };
+                var mapOptions = {
+                    center: latLng,
+                    zoom: 15,
+                    mapTypeId: google.maps.MapTypeId.ROADMAP
+                };
 
-                // $scope.map = new google.maps.Map(document.getElementById("map"), mapOptions);
-                // if (places.length == 0) {
-                //     return;
-                // }
+                var geocoder = new google.maps.Geocoder();
+                geocoder.geocode({
+                    'latLng': latLng
+                }, function(results, status) {
+                    if (status == google.maps.GeocoderStatus.OK) {
+                        console.log("status", results[0].geometry.location.lat(), results[0].geometry.location.lng())
 
-                // Clear out the old markers.
-                // markers.forEach(function(marker) {
-                //     marker.setMap(null);
-                // });
-                markers = [];
-
-                // For each place, get the icon, name and location.
-                var bounds = new google.maps.LatLngBounds();
-                places.forEach(function(place) {
-                    if (!place.geometry) {
-                        console.log("Returned place contains no geometry");
-                        return;
-                    }
-                    var icon = {
-                        url: place.icon,
-                        size: new google.maps.Size(71, 71),
-                        origin: new google.maps.Point(0, 0),
-                        anchor: new google.maps.Point(17, 34),
-                        scaledSize: new google.maps.Size(25, 25)
-                    };
-
-                    // Create a marker for each place.
-                    markers.push(new google.maps.Marker({
-                        map: map,
-                        icon: icon,
-                        title: place.name,
-                        position: place.geometry.location
-                    }));
-
-                    if (place.geometry.viewport) {
-                        // Only geocodes have viewport.
-                        bounds.union(place.geometry.viewport);
+                        $scope.location = results[0];
+                        //document.getElementById('pac-input').text = "ABC"
+                        $ionicLoading.hide();
+                        $ionicPopup.alert({
+                            title: 'Your location is ' + $scope.location.formatted_address,
+                            scope: $scope
+                        });
                     } else {
-                        bounds.extend(place.geometry.location);
+                        //$q.reject();
                     }
                 });
-                $scope.map.fitBounds(bounds);
-            });*/
-        }, function(error) {
-            $ionicLoading.hide();
-            $ionicPopup.alert({
-                title: 'Could not get your location. Try again!',
-                scope: $scope
+
+                $scope.map = new google.maps.Map(document.getElementById("map"), mapOptions);
+                var marker = new google.maps.Marker({
+                    position: latLng,
+                    map: $scope.map,
+                    title: 'Hello World!'
+                });
+                HSSearch.init();
+            }, function(error) {
+                $ionicLoading.hide();
+                $ionicPopup.alert({
+                    title: 'Could not get your location. Try again!',
+                    scope: $scope
+                });
+                console.log("Could not get location");
             });
-            console.log("Could not get location");
+        }
+        // getCurrentLocation();
+
+    function CheckIfLocationOn() {
+        cordova.plugins.diagnostic.isLocationEnabled(function(res) {
+            console.log(res)
+            if (!res) {
+                var confirmPopup = $ionicPopup.confirm({
+                    title: 'Your device GPS is off. Do you want turn on your GPS settings?'
+                });
+
+                confirmPopup.then(function(res) {
+                    if (res) {
+
+                        cordova.plugins.diagnostic.switchToLocationSettings();
+                    } else {
+                        console.log('You are not sure');
+                    }
+                });
+            } else {
+                getCurrentLocation();
+            }
+        }, function(err) {
+
         });
     }
-    getCurrentLocation();
+
+    CheckIfLocationOn();
+
+    $scope.tryagain = function() {
+        CheckIfLocationOn();
+    }
 
     $scope.confirm = function(category) {
-        $rootScope.$broadcast('POST_LOCATION_CHANGED', {args: $scope.location})
+        $rootScope.$broadcast('POST_LOCATION_CHANGED', { args: $scope.location })
         $ionicHistory.goBack();
     };
 
-});
+})
+
+
+.controller('ProcessLocationCtrl', function($scope, $timeout, Posts, $state) {
+    var HSSearch = {
+        init: function() {
+            this.placeInit();
+            $(document).on("gotPosition", HSSearch.biasResults);
+        },
+
+        biasResults: function() {
+            var geolocation = new google.maps.LatLng(
+                window.userPosition.coords.latitude, window.userPosition.coords.longitude);
+            HSSearch.autocomplete.setBounds(new google.maps.LatLngBounds(geolocation,
+                geolocation));
+        },
+
+        placeInit: function() {
+            // Create the autocomplete object, restricting the search
+            // to geographical location types.
+            console.log("in place init service")
+            HSSearch.autocomplete = new google.maps.places.SearchBox(
+                /** @type {HTMLInputElement} */
+                (document.getElementById('searchInput')), { types: ['geocode'] });
+            // When the user selects an address from the dropdown,
+            // do search
+            HSSearch.autocomplete.addListener('places_changed', function() {
+                var places = HSSearch.autocomplete.getPlaces();
+                console.log(places)
+                var arr = [];
+                $scope.loc = {};
+                $scope.loc.location_name = places[0].formatted_address;
+                var lat = places[0].geometry.location.lat();
+                var lng = places[0].geometry.location.lng()
+                var arr = [];
+                arr[0] = lat;
+                arr[1] = lng;
+                $scope.loc.location = arr;
+            })
+
+        }
+    };
+    $timeout(function() {
+        HSSearch.init();
+    }, 500)
+
+    $scope.next = function() {
+        $state.go('process');
+        Posts.insertHomeLocation($scope.loc, { loc: 'home_location' }).success(function(res) {
+                console.log("res", res);
+            })
+            .error(function(err) {
+                console.log("err", err);
+            })
+    }
+})

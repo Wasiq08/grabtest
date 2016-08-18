@@ -143,7 +143,7 @@ angular.module('app.routes', [])
     .state('process', {
         url: '/process',
         templateUrl: 'templates/process.html',
-        controller: 'processCtrl'
+        controller: 'process1Ctrl'
     })
 
     .state('process1', {
@@ -162,6 +162,12 @@ angular.module('app.routes', [])
         url: '/process3',
         templateUrl: 'templates/process3.html',
         controller: 'process1Ctrl'
+    })
+
+    .state('processlocation', {
+        url:'/processlocation',
+        templateUrl: 'templates/processlocation.html',
+        controller: 'ProcessLocationCtrl'
     })
 
 
