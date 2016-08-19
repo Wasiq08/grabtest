@@ -174,6 +174,17 @@ angular.module('app.routes', [])
         controller: 'process1Ctrl'
     })
 
+    .state('sidemenu.feedback', {
+        url: '/feedback',
+        views: {
+            'menuContent': {
+                templateUrl: 'templates/feedback.html',
+                controller: 'FeedbackCtrl' ,
+            }
+        }
+
+    })
+
     .state('processlocation', {
         url: '/processlocation',
         templateUrl: 'templates/processlocation.html',

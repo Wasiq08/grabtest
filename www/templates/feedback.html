@@ -1,0 +1,35 @@
+<ion-view view-title="Feedback" hide-back-button="true">
+    <ion-nav-buttons side="left">
+        <div class="buttons">
+            <button class="button button-icon ion-ios-arrow-back" style="color: white;" nav-direction="back" ng-click="$ionicGoBack(); "></button>
+        </div>
+    </ion-nav-buttons>
+    <ion-nav-buttons side="right">
+        <div class="buttons">
+            <button class="button button-icon ion-ios-search-strong" style="color: white;"></button>
+        </div>
+    </ion-nav-buttons>
+    <ion-content has-bouncing="false" class="fd-bg">
+        <div class="pal main-bg">
+            <div class="ft-16" style="color:white">What would you like to report?</div>
+            <div class="ptm">
+                <div ng-click="selectsuggestion()" style="width:80%; text-align:center;"  ng-style="{'background-color' : suggestion}"><span><i class="lg-icon-feedback"></i></span><span>{{suggestion == 'orange' ? '&#9989' : ''}}Suggestion</span></div>
+                <div ng-click="selectbug()" style="width:80%; text-align:center;"  ng-style="{'background-color' : bug}"><span><i class="lg-icon-bug"></i></span><span>{{bug == 'orange' ? '&#9989' : ''}}Bug</span></div>
+            </div>
+            <div style="margin-top:20px;">
+                <textarea rows="5" ng-model="feedback.text" placeholder="Briefly describe your experience  ...." style="width:80%;"></textarea>
+            </div>
+            <div class="mtm pts lg-m-align">
+                <button ng-click="submit()" type="submit" class="feedbak-btn">Submit</button>
+            </div>
+        </div>
+        <div class="pal main-bg lg-m-align" ng-if="container2">
+            <div class="ft-28 gr-txt mbl"><i class="lg-icon-feedback"></i></div>
+            <div class="ft-16 txt-reg bl-txt">Thank you for your kind words</div>
+            <div class="ft-14 txt-reg db-txt phl ptm">Our team will definetely have a look at your valuable feedback. It really helps us improve further.</div>
+            <div class="mtm pts lg-m-align">
+                <button type="submit" ng-click="$ionicGoBack()" class="feedbak-btn gr">Peace!</button>
+            </div>
+        </div>
+    </ion-content>
+</ion-view>

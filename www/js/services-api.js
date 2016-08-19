@@ -163,6 +163,12 @@ angular.module('CoreApi', ['CoreApiUtilities'])
         var url = httpService.Utils.buildUrl(new Array('gcloud', 'tag', imageid));
         return httpService.$http.get(url, config);
     }
+
+    this.feedback = function(params) {
+        var config = httpService.Utils.getHeader();
+        var url = httpService.Utils.buildUrl(new Array('feedback'));
+        return httpService.$http.post(url, params, config);
+    }
 }])
 
 angular.module('CoreApiUtilities', [])
