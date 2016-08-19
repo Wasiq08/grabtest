@@ -1,5 +1,5 @@
 <ion-view view-title="Feedback" hide-back-button="true">
-  <ion-nav-buttons side="left">
+    <ion-nav-buttons side="left">
         <div class="buttons">
             <button class="button button-icon ion-ios-arrow-back" style="color: white;" nav-direction="back" ng-click="$ionicGoBack(); "></button>
         </div>
@@ -11,13 +11,13 @@
     </ion-nav-buttons>
     <ion-content has-bouncing="false" class="fd-bg">
         <div class="pal main-bg">
-            <div class="ft-16 txt-reg bl-txt">What would you like to report?</div>
-            <div class="pam">
-                <div class="lg-inline-bl" ng-click="selectSuggestion()"><span class="feedback-opt {{!select ? 'selected' : ''}} mrm"><i class="lg-icon-feedback"></i></span><span class="lg-inline-bl lg-vm-align db-txt ft-16">Suggestion</span></div>
-                <div class="lg-inline-bl mlm" ng-click="selectBug()"><span class="feedback-opt {{select ? 'selected' : ''}} mrm"><i class="lg-icon-bug"></i></span><span class="lg-inline-bl lg-vm-align db-txt ft-16">Bug</span></div>
+            <div class="ft-16" style="color:white">What would you like to report?</div>
+            <div class="ptm">
+                <div ng-click="selectsuggestion()" style="width:80%; text-align:center;"  ng-style="{'background-color' : suggestion}"><span><i class="lg-icon-feedback"></i></span><span>{{suggestion == 'orange' ? '&#9989' : ''}}Suggestion</span></div>
+                <div ng-click="selectbug()" style="width:80%; text-align:center;"  ng-style="{'background-color' : bug}"><span><i class="lg-icon-bug"></i></span><span>{{bug == 'orange' ? '&#9989' : ''}}Bug</span></div>
             </div>
-            <div class="mtm">
-                <textarea class="lg-text-area-pd-gen lg-br-all db-txt lg-thin-br br-radii" rows="5" ng-model="feedback.text" msd-elastic="" placeholder="Briefly describe your experience  ...."></textarea>
+            <div style="margin-top:20px;">
+                <textarea rows="5" ng-model="feedback.text" placeholder="Briefly describe your experience  ...." style="width:80%;"></textarea>
             </div>
             <div class="mtm pts lg-m-align">
                 <button ng-click="submit()" type="submit" class="feedbak-btn">Submit</button>

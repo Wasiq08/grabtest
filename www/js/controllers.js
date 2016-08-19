@@ -164,22 +164,50 @@ angular.module('app.controllers', [])
 
 })
 
-.controller('SideMenuCtrl', function($scope, $state,$rootScope, localStorageService) {
+.controller('SideMenuCtrl', function($scope, $state, $rootScope, localStorageService) {
     $rootScope.user = localStorageService.get("loggedInUser");
     $rootScope.$on('User_changed', function(event, args) {
         $rootScope.user = args.user;
     })
 
 
-    $scope.feedback = function(){
-        console.log("FFFFFFFFF"); 
+    $scope.feedback = function() {
+        console.log("FFFFFFFFF");
         $state.go('feedback');
     }
 
 })
 
-.controller('FeedbackCtrl',  function($ionicSideMenuDelegate){
-      $ionicSideMenuDelegate.toggleLeft();
+.controller('FeedbackCtrl', function($ionicSideMenuDelegate, $scope, Posts, $ionicPopup) {
+    $ionicSideMenuDelegate.toggleLeft();
+    $scope.suggestion = "orange";
+    $scope.bug = "white";
+    $scope.feedback = {};
+    $scope.feedback.feedback_type = "suggestion";
+
+    $scope.selectsuggestion = function() {
+        $scope.suggestion = "orange";
+        $scope.bug = "white";
+        $scope.feedback.feedback_type = "suggestion";
+    }
+
+    $scope.selectbug = function() {
+        $scope.suggestion = "white";
+        $scope.bug = "orange";
+        $scope.feedback.feedback_type = "bug";
+    }
+
+    $scope.submit = function() {
+        Posts.feedback($scope.feedback).success(function(res) {
+                $ionicPopup.alert({
+                    title: res.data
+                });
+                $scope.feedback.text = "";
+            })
+            .error(function(err) {
+
+            })
+    }
 })
 
 .controller('signUpCtrl', function($scope, ionicDatePicker, $ionicLoading, localStorageService, $state, User, $ionicPopup, $rootScope) {
@@ -2120,7 +2148,7 @@ angular.module('app.controllers', [])
                 var places = HSSearch.autocomplete.getPlaces();
                 var place = places[0];
                 console.log(place)
-                // Get place lat/lon
+                    // Get place lat/lon
                 var params = {};
                 params["lat"] = place.geometry.location.d;
                 params["lon"] = place.geometry.location.e;
@@ -2293,6 +2321,6 @@ angular.module('app.controllers', [])
     }
 })
 
-.controller('MyaccountCtrl', function ($scope, $ionicSideMenuDelegate) {
+.controller('MyaccountCtrl', function($scope, $ionicSideMenuDelegate) {
     $ionicSideMenuDelegate.toggleLeft();
 })
