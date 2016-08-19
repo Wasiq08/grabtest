@@ -9,10 +9,18 @@
         </div>
     </ion-header-bar>
     <ion-content>
-        <div class="phl">
+       <!-- <div class="phl">
             <input id="pac-input" class="controls" type="text" placeholder="Search Box" ng-model="vm.location.formatted_address">
-            <!--    <ion-google-place placeholder="Your address" ng-model="data.address" required name="address" current-location="true" location-changed="locationChanged" /> -->
+            <!--  <ion-google-place placeholder="Your address" ng-model="data.address" required name="address" current-location="true" location-changed="locationChanged" />
+        </div> -->
+        <div id="search-bar">
+            <div class="item item-input-inset">
+                <label class="item-input-wrapper" id="search-input">
+                    <i class="icon ion-search placeholder-icon"></i>
+                    <input id="searchInput" type="text" placeholder="Search" ng-model="query" ng-change="search()">
+                </label>
+            </div>
         </div>
-        <div id="map"></div>
+       <!--  <div id="map"></div> -->
     </ion-content>
 </div>

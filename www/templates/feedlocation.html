@@ -1,5 +1,20 @@
-<ion-view>
+<ion-view title="Food Monger" hide-back-button="true">
+    <ion-nav-buttons side="left">
+        <div class="buttons">
+            <button class="button button-icon ion-ios-arrow-back" style="color: white;" nav-direction="back" ng-click="$ionicGoBack(); "></button>
+        </div>
+    </ion-nav-buttons>
+<!--     <ion-nav-buttons side="right" scroll="false">
+        <div class="buttons">
+            <button class="button button-icon ion-ios-search-strong" style="color: white;"></button>
+        </div>
+    </ion-nav-buttons> -->
     <ion-content>
+        <div ng-click="mapByCurrentLocation()" style="width:50%; height: 30px; text-align:center;" ng-style="{'background-color' : filterlocation}">
+            Current Location
+        </div>
+        <div ng-click="mapByHomeLocation()" style="width:50%; height: 30px; margin-top: -30px; margin-left: 50%; text-align:center;" ng-style="{'background-color' : filterprice}">
+            Home Location
         </div>
         <div id="map"></div>
     </ion-content>

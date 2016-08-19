@@ -1,14 +1,43 @@
-<div style="height:100px; background-color:white; width:100%;">
+<ion-modal-view class="ion-nifty-modal">
     <div ng-click="closeModal()" class="ft-16" style="color:black; margin-left:5px; margin-top:5px;"><i class="ion-close"></i>
     </div>
-    <div style="margin-left:auto; margin-right:auto; width:203px;background-color:orange; height:32px; padding-top: 1px; padding-left: 1px; border-radius: 10px;  ">
-        <div ng-click="locationFilter()" style="width:100px; height:30px; padding-top: 5px; background-color:orange;     border-top-left-radius: 10px;
-    border-bottom-left-radius: 10px;">
+    <div style="margin-left:auto; margin-right:auto; width:304px;background-color:orange; height:32px; padding-top: 1px; padding-left: 1px; border-radius: 10px;  ">
+        <div ng-click="locationFilter()" style="width:100px; height:30px; padding-top: 5px;      border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;" ng-style="{'background-color' : filterlocation}">
             <p style="text-align:center;">Location</p>
         </div>
-        <div ng-click="locationFilter()" style="width:100px; height:30px; background-color:white; margin-top: -30px; margin-left:101px;padding-top: 5px;     border-top-right-radius: 10px;
-    border-bottom-right-radius: 10px;">
-            <p style="text-align:center;">Price</p>
+        <div ng-click="selectPrice()" style="width:100px; height:30px; margin-top: -30px; margin-left:101px;padding-top: 5px;" ng-style="{'background-color' : filterprice}">
+            <p style="text-align:center;">Distance</p>
+        </div>
+        <div ng-click="selectAllFeed()" style="width:100px; height:30px; margin-top: -30px; margin-left:202px;padding-top: 5px;     border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;" ng-style="{'background-color' : allFeedFilter}">
+            <p style="text-align:center;">All</p>
         </div>
     </div>
-</div>
+    <div ng-if="filterlocation == 'orange'" style="margin-left:auto; width: 130px; margin-right:auto; margin-top:5px;">
+        <div ng-click="getCurrentLocationFeed()" style="border-style:solid; border-width:thin;">
+            {{currentlocation == true ? '&#9989' : ''}} Current Address
+        </div>
+        <div ng-click="getHomeLocationFeed()" style="border-style:solid; border-width:thin;">
+            {{currentlocation != true ? '&#9989' : ''}} Home Location
+        </div>
+    </div>
+    <div ng-if="filterprice == 'orange'">
+        <div class="plm prm">
+            <rzslider rz-slider-model="minRangeSlider.minValue" rz-slider-high="minRangeSlider.maxValue" rz-slider-options="minRangeSlider.options"></rzslider>
+        </div>
+        <div ng-click="priceFilter()" style="    color: grey;
+    float: right;
+    margin-right: 20px;">
+            Ok
+        </div>
+    </div>
+</ion-modal-view>
+<!-- <ion-modal-view class="ion-nifty-modal">
+    <div class="ion-modal-content-custom">
+        <ion-content class="padding">
+            <button class="button button-full button-positive" ng-click="closeModal()">Close Modal</button>
+        </ion-content>
+    </div>
+</ion-modal-view>
+ -->

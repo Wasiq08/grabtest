@@ -10,9 +10,11 @@
             <div style="width: 80%; background-color: #f9f9f9; margin-right:auto; margin-left:auto; padding-bottom:10px;padding-top:10px;">
                 <div ng-click="addImage()"  style="width: 150px; height: 150px; margin-top: 25px;margin-left:auto; margin-right:auto;">
                     <img ng-src="{{image.src}}" class="fd-img fd-img-br">
+                    <div style="margin-left:auto;margin-right:auto; width:20px;">{{loadedvalue}}%
+                    </div>
                 </div>
                 <div ng-if="isLoading" class="loader loader-profile"></div>
-                <div class="profile-name ft-20" style="color:black; margin-top:10px;">
+                <div class="profile-name ft-20" style="color:black; margin-top:20px;">
                     {{$root.user.name}}
                 </div>
                 <div style="text-align:center; margin-top:25px; color:rgba(39, 62, 84, 0.82);" class="ft-16" ng-click="addImage()">Upload</div>
@@ -23,6 +25,7 @@
                     <p class="pts pbs ft-14" style="text-align: center;"><b>Upload</b></p>
                 </div>
             </div>
+            <div style="color:#ff6f29; margin-left:10%;" >Skip</div>
         </div>
     </ion-content>
 </ion-view>

@@ -12,7 +12,7 @@
         <div class="padding ptl fd-m-align">
 <!--             <div class="lg-text-area" contenteditable="true" placeholder="Add #tags to your goal ..."></div> -->
                     <div class="add-interest ft-14 ptm pbm lg-br-btm lg-thin-br">
-                        <a on-touch="removeHashTag($event)" data-index="{{$index}}"" class="hash-tag lg-vm-align" ng-repeat="hashtag in $root.hashtags">{{hashtag}}</a>
+                        <a on-touch="removeHashTag($event)" data-index="{{$index}}"" class="hash-tag lg-vm-align" ng-repeat="hashtag in $root.hashtags">{{hashtag.desc || hashtag}}</a>
                         <span class="button button-small button-clear lg-vm-align" style="color: rgba(39, 62, 84, 0.82);" contenteditable ng-keypress="keypress($event)" ng-focus="focus($event)" ng-blur="blur($event)" ng-keydown="keydown($event)">Add #tags to your goal ...</span>
                     </div>
 
