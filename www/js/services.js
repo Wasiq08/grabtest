@@ -52,7 +52,7 @@ angular.module('app.services', [])
 
 }])
 
-.factory('HSSearch', [function () {
+.factory('HSSearch', [function() {
 
     var HSSearch = {
         lastParams: false,
@@ -253,7 +253,7 @@ angular.module('app.services', [])
 })
 
 
-.service('CurrentLatLngService', [function () {
+.service('CurrentLatLngService', [function() {
     this._latLang = {};
     this.save = function(latLang) {
         this._latLang = latLang;
@@ -296,7 +296,7 @@ angular.module('app.services', [])
                             arr[1] = lng;
                             loc.location = arr;
                             console.log(loc)
-                            Posts.insertCurrentLocation(loc, {loc: 'current_location'}).success(function(res) {
+                            Posts.insertCurrentLocation(loc, { loc: 'current_location' }).success(function(res) {
                                     console.log(res)
                                     defered.resolve(true)
                                 })
@@ -325,5 +325,75 @@ angular.module('app.services', [])
             });
 
         return defered.promise;
+    }
+})
+
+
+/* UploadSingleImage */
+.service('ImageUploadService', function($cordovaCamera, httpService, $cordovaFileTransfer, $q, $rootScope) {
+    //http://162.243.119.60:3000/upload/image?imageof=post
+    $rootScope.loadedValue = 0.0;
+    this.UploadNow = function(type, isCamera, isEditable) {
+        var deferred = $q.defer();
+        select(isCamera, isEditable).then(function(res) {
+            //$rootScope.showLoading("Uploading", 100000)
+            console.log('selected');
+            upload(res, type).then(function(res) {
+                console.log('uploaded');
+                //$rootScope.hideLoading()
+                deferred.resolve(res);
+            }, function(err) {
+                deferred.reject(err)
+            })
+        }, function(err) {
+            deferred.reject(err)
+        })
+        return deferred.promise;
+    }
+
+    function select(isCamera, isEditable) {
+        var options = {
+            quality: 80,
+            destinationType: Camera.DestinationType.FILE_URI,
+            sourceType: (isCamera == true) ? Camera.PictureSourceType.CAMERA : Camera.PictureSourceType.PHOTOLIBRARY,
+            allowEdit: isEditable || false,
+            encodingType: Camera.EncodingType.JPEG,
+            popoverOptions: CameraPopoverOptions,
+            saveToPhotoAlbum: false,
+            correctOrientation: true
+        };
+        var deferred = $q.defer();
+        $cordovaCamera.getPicture(options).then(function(imageData) {
+            console.log("image url", imageData);
+            deferred.resolve(imageData)
+        }, function(err) {
+            deferred.reject(err)
+        });
+        return deferred.promise;
+    }
+
+    function upload(imageUri, type) {
+        var route = httpService.Utils.buildUrl(new Array('upload', 'image'), { imageof: type }),
+            filePath = imageUri;
+        var options = {
+            fileKey: "uploadfile",
+            fileName: imageUri.substr(imageUri.lastIndexOf('/') + 1),
+            chunkedMode: false,
+            mimeType: "image/jpg",
+            headers: httpService.Utils.getHeader().headers
+        };
+
+        var deferred = $q.defer();
+        console.log('uploading');
+        $cordovaFileTransfer.upload(route, filePath, options).then(function(result) {
+            var res = JSON.parse(result.response)
+            deferred.resolve(res);
+        }, function(err) {
+            deferred.reject(err)
+        }, function(progress) {
+            $rootScope.loadedValue = ((progress.loaded / progress.total) * 100).toString().split(".")[0];
+            console.log($rootScope.loadedValue);
+        });
+        return deferred.promise;
     }
 })

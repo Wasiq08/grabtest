@@ -39,6 +39,16 @@ angular.module('app.routes', [])
         }
     })
 
+    .state('sidemenu.myaccount', {
+        url: '/myaccount',
+        views: {
+            'menuContent': {
+                templateUrl: 'templates/myaccount.html',
+                controller: 'MyaccountCtrl'
+            }
+        }
+    })
+
     .state('sidemenu.foodprofile', {
         url: '/foodprofile/:id',
         views: {
@@ -104,7 +114,7 @@ angular.module('app.routes', [])
         url: '/feedlocation',
         views: {
             'menuContent': {
-                templateUrl : 'templates/feedlocation.html',
+                templateUrl: 'templates/feedlocation.html',
                 controller: 'FeedLocationCtrl'
             }
         }
@@ -165,7 +175,7 @@ angular.module('app.routes', [])
     })
 
     .state('processlocation', {
-        url:'/processlocation',
+        url: '/processlocation',
         templateUrl: 'templates/processlocation.html',
         controller: 'ProcessLocationCtrl'
     })

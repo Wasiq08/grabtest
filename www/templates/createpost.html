@@ -12,12 +12,12 @@
     <ion-content>
         <div style="width: 100%; height: 240px;">
             <img ng-src="{{imageData}}" class="fd-img" style="z-index:10">
-            <div ng-if="isloading && loadedvalue > 0" class="loader" style="height:20px; width:20px; z-index: 1000;margin-top: -135px;    border: 2px solid #f3f3f3;
+            <div ng-if="isloading && $root.loadedValue > 0" class="loader" style="height:20px; width:20px; z-index: 1000;margin-top: -135px;    border: 2px solid #f3f3f3;
     border-radius: 50%;
     border-top: 2px solid #3498db;">
             </div>
-            <div ng-if="isloading  && loadedvalue > 0" style="margin-left:auto;margin-right:auto; z-index:1000; text-align:center;">{{loadedvalue}} % </div>
-            <div ng-click="uploadpostimage()" ng-if="isloading  && loadedvalue <= 0" style="height:20px; width:20px; z-index: 1000;margin-top: -135px; margin-right:auto; margin-left:auto;"><span class="ft-32"><i class="ion-camera"></i></span>
+            <div ng-if="isloading  && $root.loadedValue > 0" style="margin-left:auto;margin-right:auto; z-index:1000; text-align:center;">{{loadedValue}} % </div>
+            <div ng-click="uploadpostimage()" ng-if="isloading  && $root.loadedValue <= 0" style="height:20px; width:20px; z-index: 1000;margin-top: -135px; margin-right:auto; margin-left:auto;"><span class="ft-32"><i class="ion-camera"></i></span>
             </div>
         </div>
         <div style="width: 90%; height: 100px; position: relative; border-bottom-style: solid; border-bottom-width: thin; border-bottom-color:  rgba(0,0,0,0.3) ; margin-left: 5%; margin-top: 10px;">
