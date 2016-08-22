@@ -120,6 +120,17 @@ angular.module('app.routes', [])
         }
     })
 
+    .state('sidemenu.feedback', {
+        url: '/feedback',
+        views: {
+            'menuContent': {
+                templateUrl: 'templates/feedback.html',
+                controller: 'FeedbackCtrl',
+            }
+        }
+
+    })
+
     .state('login', {
         url: '/main',
         templateUrl: 'templates/login.html',
@@ -172,17 +183,6 @@ angular.module('app.routes', [])
         url: '/process3',
         templateUrl: 'templates/process3.html',
         controller: 'process1Ctrl'
-    })
-
-    .state('sidemenu.feedback', {
-        url: '/feedback',
-        views: {
-            'menuContent': {
-                templateUrl: 'templates/feedback.html',
-                controller: 'FeedbackCtrl' ,
-            }
-        }
-
     })
 
     .state('processlocation', {
