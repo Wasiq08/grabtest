@@ -66,6 +66,7 @@ angular.module('app', ['ionic', 'ngCordova', 'ionic-datepicker', 'ngGeolocation'
         User.logout().success(function(res) {
                 localStorageService.set("auth_token", null);
                 localStorageService.set("loggedInUser", null);
+                localStorageService.set("loggedInUserUid", null);
                 $ionicLoading.hide()
                 $state.go('login')
             })
