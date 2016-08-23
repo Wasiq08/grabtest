@@ -50,7 +50,7 @@ angular.module('app.routes', [])
     })
 
     .state('sidemenu.foodprofile', {
-        url: '/foodprofile/:id',
+        url: '/foodprofile/:id/:index',
         views: {
             'menuContent': {
                 templateUrl: 'templates/foodprofile.html',

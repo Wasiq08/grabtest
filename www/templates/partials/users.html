@@ -1,0 +1,11 @@
+<ion-modal-view class="ion-nifty-modal" style="top:20% !important; height:50% !important; max-height:60% !important; overflow: auto;">
+    {{totalLikesUser.length}} users likes this post!
+    
+    <div class="ptm fd-l-align">
+        <div class="list mbn" ng-repeat="x in totalLikesUser">
+            <div class="item item-avatar pbl ptl  item-icon-right no-border">
+                <img class="user-thumb" on-tap="navigateToUser(x.user.id)" ng-src="{{x.user.media[0].small}}"><span class="ft-14 txt-book db-txt" on-tap="navigateToUser(x.user.id)">{{x.user.name}}</span>
+            </div>
+        </div>
+    </div>
+</ion-modal-view>

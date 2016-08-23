@@ -1,10 +1,10 @@
 angular.module('app.controllers', [])
 
-.controller('loginCtrl', function($scope, User, $ionicModal, $cordovaFacebook, $ionicPopup, $ionicLoading, $state, localStorageService, $rootScope) {
+.controller('loginCtrl', function($scope, User, $q, $ionicModal, $cordovaFacebook, $ionicPopup, $ionicLoading, $state, localStorageService, $rootScope) {
     $scope.users = {};
     // $scope.users.user_email = 'ameerhamza810@gmail.com';
     // $scope.users.password = '123'
-
+    $scope.isButtonLoading = false;
     $scope.show = function() {
         $ionicLoading.show({
             template: 'Loading...'
@@ -18,26 +18,29 @@ angular.module('app.controllers', [])
         var errors = [];
         localStorageService.set("auth_token", null);
         localStorageService.set("loggedInUser", null);
+        localStorageService.set("loggedInUserUid", null);
         console.log("in login")
         var params = {
             email: $scope.users.user_email,
             password: $scope.users.password
         };
-        $scope.show();
+        //$scope.show();
+        $scope.isButtonLoading = true;
         User.login(params).success(function(res) {
                 console.log(res)
                 if (res.meta.status == 200) {
                     localStorageService.set("auth_token", res.data.auth.token);
                     localStorageService.set("loggedInUser", res.data.auth.user);
+                    localStorageService.set("loggedInUserUid", res.data.auth.user._id);
                     $rootScope.user = localStorageService.get("loggedInUser");
                     console.log("in login", localStorageService.get("loggedInUser"))
                         //$rootScope.$broadcast('User_changed', {user: localStorageService.get("loggedInUser")})
                     if (res.data.auth.user.on_boarding == 0) {
-                        $scope.hide();
                         $state.go('welcome')
+                        $scope.isButtonLoading = false;
                     } else {
-                        $scope.hide();
                         $state.go('sidemenu.turn-on-location')
+                        $scope.isButtonLoading = false;
                     }
 
                 }
@@ -46,7 +49,8 @@ angular.module('app.controllers', [])
             .error(function(err) {
                 errors.push('Invalid Username/Password! ')
                 $scope.showAlert(errors);
-                $scope.hide();
+                //$scope.hide();
+                $scope.isButtonLoading = false;
             })
     }
 
@@ -64,12 +68,12 @@ angular.module('app.controllers', [])
     };
 
     ////////////////////////// SOCIAL MEDIA INTEGRATION
-    $ionicModal.fromTemplateUrl('templates/authFacebook.html', {
-        scope: $scope,
-        animation: 'slide-in-up'
-    }).then(function(modal) {
-        $scope.modal = modal;
-    });
+    // $ionicModal.fromTemplateUrl('templates/authFacebook.html', {
+    //     scope: $scope,
+    //     animation: 'slide-in-up'
+    // }).then(function(modal) {
+    //     $scope.modal = modal;
+    // });
 
     $scope.facebookDetails = {};
     $scope.createFbUser = function(data) {
@@ -114,53 +118,239 @@ angular.module('app.controllers', [])
             })
 
     }
+
+    var fbLoginSuccess = function(response) {
+        console.log(" in success", response)
+        // if (!response.authResponse) {
+        //     fbLoginError("Cannot find the authResponse");
+        //     return;
+        // }
+
+        var authResponse = response.authResponse;
+
+        getFacebookProfileInfo(authResponse)
+            .then(function(profileInfo) {
+                // For the purpose of this example I will store user data on local storage
+
+                console.log(profileInfo);
+                console.log(profileInfo.email);
+                var UserObj = {
+                    id: profileInfo.id,
+                    name: profileInfo.name,
+                    email: profileInfo.email,
+                    facebook: {
+                        id: profileInfo.id,
+                        name: profileInfo.name,
+                        email: profileInfo.email,
+                        profile: "http://graph.facebook.com/" + profileInfo.id + "/picture?type=square"
+                    }
+                }
+                User.registerWithFacebook(UserObj, profileInfo.id).success(function(result) {
+                        console.log("in register with facebook", result);
+                        User.facebookAuthentication({ id: profileInfo.id }).success(function(res) {
+                                console.log("in facebookAuthentication", res)
+                                localStorageService.set("auth_token", res.data.auth.token);
+                                localStorageService.set("loggedInUser", res.data.auth.user);
+                                localStorageService.set("loggedInUserUid", res.data.auth.user._id);
+                                $rootScope.user = localStorageService.get("loggedInUser");
+                                console.log("in login", localStorageService.get("loggedInUser"))
+                                    //$rootScope.$broadcast('User_changed', {user: localStorageService.get("loggedInUser")})
+                                if (res.data.auth.user.on_boarding == 0) {
+                                    $scope.hide();
+                                    $state.go('welcome')
+                                } else {
+                                    $scope.hide();
+                                    $state.go('sidemenu.turn-on-location')
+                                }
+                            })
+                            .error(function(err) {
+                                console.log("in facebook auth error", err)
+                            })
+                    })
+                    .error(function(err) {
+                        User.facebookAuthentication({ id: profileInfo.id }).success(function(res) {
+                                console.log("in facebookAuthentication", res)
+                                localStorageService.set("auth_token", res.data.auth.token);
+                                localStorageService.set("loggedInUser", res.data.auth.user);
+                                localStorageService.set("loggedInUserUid", res.data.auth.user._id);
+                                $rootScope.user = localStorageService.get("loggedInUser");
+                                console.log("in login", localStorageService.get("loggedInUser"))
+                                    //$rootScope.$broadcast('User_changed', {user: localStorageService.get("loggedInUser")})
+                                if (res.data.auth.user.on_boarding == 0) {
+                                    $scope.hide();
+                                    $state.go('welcome')
+                                } else {
+                                    $scope.hide();
+                                    $state.go('sidemenu.turn-on-location')
+                                }
+                            })
+                            .error(function(err) {
+                                console.log("in facebook auth error", err)
+                            })
+                    }).error(function(err) {
+                        console.log("in facebook auth error", err)
+                    })
+                    // UserService.setUser({
+                    //     authResponse: success.authResponse,
+                    //     userID: profileInfo.id,
+                    //     name: profileInfo.name,
+                    //     email: profileInfo.email,
+                    //     picture: "http://graph.facebook.com/" + success.authResponse.userID + "/picture?type=large"
+                    // });
+
+                //$state.go('app.home');
+            }, function(fail) {
+                // Fail get profile info
+                console.log('profile info fail', fail);
+            });
+    };
+
+    // This is the fail callback from the login method
+    var fbLoginError = function(error) {
+        console.log('fbLoginError', error);
+        $ionicLoading.hide();
+    };
+
+    // This method is to get the user profile info from the facebook api
+    var getFacebookProfileInfo = function(authResponse) {
+        var info = $q.defer();
+
+        facebookConnectPlugin.api('/me?fields=email,name&access_token=' + authResponse.accessToken, null,
+            function(response) {
+                console.log(response);
+                info.resolve(response);
+            },
+            function(response) {
+                console.log(response);
+                info.reject(response);
+            }
+        );
+        return info.promise;
+    };
+
+
     $scope.facebookSignIn = function() {
-        facebookConnectPlugin.login(["public_profile", "email", "user_friends", 'user_birthday'], function(res) {
-                console.log(res)
-            }, function(err) {
-                console.log(err)
-            })
-            // $cordovaFacebook.login(["public_profile", "email", "user_friends", 'user_birthday'])
-            //     .then(function(success) {
-            //         console.log("LOGGGGGGGGGGG", success);
-            //         /*
-            //          * Get user data here. 
-            //          * For more, explore the graph api explorer here: https://developers.facebook.com/tools/explorer/
-            //          * "me" refers to the user who logged in. Dont confuse it as some hardcoded string variable. 
-            //          * 
-            //          */
-            //         //To know more available fields go to https://developers.facebook.com/tools/explorer/
-            //         $cordovaFacebook.api("me?fields=id,name,picture", [])
-            //             .then(function(result) {
+        console.log("in facebook sign in")
+        facebookConnectPlugin.getLoginStatus(function(success) {
+            if (success.status === 'connected') {
+                // The user is logged in and has authenticated your app, and response.authResponse supplies
+                // the user's ID, a valid access token, a signed request, and the time the access token
+                // and signed request each expire
+                console.log('getLoginStatus', success.status);
+                // Facebook logout
+                // facebookConnectPlugin.logout(function() {
+                //         $ionicLoading.hide();
+                //         //$state.go('welcome');
+                //     },
+                //     function(fail) {
+                //         $ionicLoading.hide();
+                //     });
+                // // Check if we have our user saved
+                //var user = UserService.getUser('facebook');
 
-        //                 $scope.modal.show();
-        //                 console.log("RESPONSE ", result)
-        //                 $scope.facebookName = result.name
-        //                     ;
-        //                      * As an example, we are fetching the user id, user name, and the users profile picture
-        //                      * and assiging it to an object and then we are logging the response.
+                //if (!user.userID) {
+                getFacebookProfileInfo(success.authResponse)
+                    .then(function(profileInfo) {
+                        // For the purpose of this example I will store user data on local storage
 
-        //                 $scope.facebookDetails = {
-        //                         id: result.id,
-        //                         name: result.name,
-        //                         pic: result.picture.data.url
-        //                     }
-        //                     //Do what you wish to do with user data. Here we are just displaying it in the view
-        //                     // $scope.fbData = JSON.stringify(userData, null, 4);
-        //                 console.log("RESULT", $scope.facebookDetails);
+                        console.log(profileInfo.email);
+                        var UserObj = {
+                            id: profileInfo.id,
+                            name: profileInfo.name,
+                            email: profileInfo.email,
+                            facebook: {
+                                id: profileInfo.id,
+                                name: profileInfo.name,
+                                email: profileInfo.email,
+                                profile: "http://graph.facebook.com/" + success.authResponse.userID + "/picture?type=square"
+                            }
+                        }
+                        User.registerWithFacebook(UserObj, profileInfo.id).success(function(result) {
+                                console.log("in register with facebook", result);
+                                User.facebookAuthentication({ id: profileInfo.id }).success(function(res) {
+                                        console.log("in facebookAuthentication", res)
+                                        localStorageService.set("auth_token", res.data.auth.token);
+                                        localStorageService.set("loggedInUser", res.data.auth.user);
+                                        localStorageService.set("loggedInUserUid", res.data.auth.user._id);
+                                        $rootScope.user = localStorageService.get("loggedInUser");
+                                        console.log("in login", localStorageService.get("loggedInUser"))
+                                            //$rootScope.$broadcast('User_changed', {user: localStorageService.get("loggedInUser")})
+                                        if (res.data.auth.user.on_boarding == 0) {
+                                            $scope.hide();
+                                            $state.go('welcome')
+                                        } else {
+                                            $scope.hide();
+                                            $state.go('sidemenu.turn-on-location')
+                                        }
+                                    })
+                                    .error(function(err) {
+                                        console.log("in facebook auth error", err)
+                                    })
+                            })
+                            .error(function(err) {
+                                User.facebookAuthentication({ id: profileInfo.id }).success(function(res) {
+                                        console.log("in facebookAuthentication", res)
+                                        localStorageService.set("auth_token", res.data.auth.token);
+                                        localStorageService.set("loggedInUser", res.data.auth.user);
+                                        localStorageService.set("loggedInUserUid", res.data.auth.user._id);
+                                        $rootScope.user = localStorageService.get("loggedInUser");
+                                        console.log("in login", localStorageService.get("loggedInUser"))
+                                            //$rootScope.$broadcast('User_changed', {user: localStorageService.get("loggedInUser")})
+                                        if (res.data.auth.user.on_boarding == 0) {
+                                            $scope.hide();
+                                            $state.go('welcome')
+                                        } else {
+                                            $scope.hide();
+                                            $state.go('sidemenu.turn-on-location')
+                                        }
+                                    })
+                                    .error(function(err) {
+                                        console.log("in facebook auth error", err)
+                                    })
+                            })
+                            // UserService.setUser({
+                            //     authResponse: success.authResponse,
+                            //     userID: profileInfo.id,
+                            //     name: profileInfo.name,
+                            //     email: profileInfo.email,
+                            //     picture: "http://graph.facebook.com/" + success.authResponse.userID + "/picture?type=large"
+                            // });
 
-        //             }, function(error) {
-        //                 console.log("MEEEEEE ERROR", error)
-        //                     // Error message
-        //             })
+                        //$state.go('app.home');
+                    }, function(fail) {
+                        // Fail get profile info
+                        console.log('profile info fail', fail);
+                    });
 
-        //     }, function(error) {
-        //         // Facebook returns error message due to which login was cancelled.
-        //         // Depending on your platform show the message inside the appropriate UI widget
-        //         // For example, show the error message inside a toast notification on Android
-        //     });
+                // facebookConnectPlugin.logout(function() {
+                //         $ionicLoading.hide();
+                //         $state.go('welcome');
+                //     },
+                //     function(fail) {
+                //         $ionicLoading.hide();
+                //     });
+                // } else {
+                // $state.go('app.home');
+                // }
+                //facebookConnectPlugin.login(['email', 'public_profile'], fbLoginSuccess, fbLoginError);
+            } else {
+                // If (success.status === 'not_authorized') the user is logged in to Facebook,
+                // but has not authenticated your app
+                // Else the person is not logged into Facebook,
+                // so we're not sure if they are logged into this app or not.
 
-    }
+                console.log('getLoginStatus', success.status);
+
+                $ionicLoading.show({
+                    template: 'Logging in...'
+                });
+
+                // Ask the permissions you need. You can learn more about
+                // FB permissions here: https://developers.facebook.com/docs/facebook-login/permissions/v2.4
+                facebookConnectPlugin.login(['email', 'public_profile'], fbLoginSuccess, fbLoginError);
+            }
+        });
+    };
 
 })
 
@@ -212,6 +402,7 @@ angular.module('app.controllers', [])
 
 .controller('signUpCtrl', function($scope, ionicDatePicker, $ionicLoading, localStorageService, $state, User, $ionicPopup, $rootScope) {
     $scope.user = {};
+    $scope.isButtonLoading = false;
     $scope.user.date_of_birth = "Enter here!"
     var ipObj1 = {
         callback: function(val) { //Mandatory
@@ -260,22 +451,25 @@ angular.module('app.controllers', [])
         if (errors.length != 0) {
             $scope.showAlert(errors);
         } else {
-            $scope.show();
+            //$scope.show();
+            $scope.isButtonLoading = true;
             User.register($scope.user).success(function(result) {
                     var params = {
                         email: $scope.user.email,
                         password: $scope.user.password
                     };
                     User.login(params).success(function(res) {
-                            console.log(res)
+                            console.log("in login after register", res)
                             if (res.meta.status == 200) {
-                                localStorageService.set("auth_token", res.meta.data.auth.token);
-                                localStorageService.set("loggedInUser", res.meta.data.auth.user);
+                                localStorageService.set("auth_token", res.data.auth.token);
+                                localStorageService.set("loggedInUser", res.data.auth.user);
+                                localStorageService.set("loggedInUserUid", res.data.auth.user._id);
                                 $rootScope.user = localStorageService.get("loggedInUser")
                                     //$rootScope.$broadcast('User_changed', {user: localStorageService.get("loggedInUser") });
                                 console.log($scope.user)
                                 $state.go('uploadimage')
-                                $scope.hide();
+                                $scope.isButtonLoading = false;
+                                //$scope.hide();
                             }
 
                         })
@@ -285,8 +479,9 @@ angular.module('app.controllers', [])
                 })
                 .error(function(err) {
                     errors.push('Email is already taken!')
+                    $scope.isButtonLoading = false;
                     $scope.showAlert(errors);
-                    $scope.hide();
+                    //$scope.hide();
                 })
         }
 
@@ -304,22 +499,13 @@ angular.module('app.controllers', [])
             console.log('Thank you for not eating my delicious ice cream cone');
         });
     };
-
-    $scope.show = function() {
-        $ionicLoading.show({
-            template: 'Loading...'
-        })
-    };
-    $scope.hide = function() {
-        $ionicLoading.hide()
-    };
 })
 
 .controller('welcomeCtrl', function($scope) {
 
 })
 
-.controller('UploadImageCtrl', function($scope, User, $ionicLoading, $state, httpService, $cordovaFileTransfer, localStorageService, $cordovaCamera, $ionicActionSheet, $rootScope) {
+.controller('UploadImageCtrl', function($scope, User, ImageUploadService, $ionicLoading, $state, httpService, $cordovaFileTransfer, localStorageService, $cordovaCamera, $ionicActionSheet, $rootScope) {
     $scope.image = {}
     $scope.image.src = "img/user.png";
 
@@ -348,134 +534,87 @@ angular.module('app.controllers', [])
         };
         var actionSheet = $ionicActionSheet.show({
             titleText: 'Actions',
-            buttons: [{ text: '<i class="icon lg-icon-gallery"></i> Gallery' }],
+            buttons: [{ text: '<i class="icon ion-camera"></i> Camera' }, { text: '<i class="icon lg-icon-gallery"></i> Gallery' }],
             //destructiveText: 'Delete',
             cancelText: '<i class="icon rd-txt lg-icon-cross-small"></i> <span class="rd-txt">Close</span>',
             cancel: function() {},
             buttonClicked: function(index) {
                 if (index == 0) {
+                    $scope.isLoading = true;
+                    ImageUploadService.UploadNow('profile', true, false).then(function(res) {
+                        //$scope.imageData = res.data.file[0].medium;
+                        $scope.isloading = false;
+                        //$scope.final_obj.post_image_id = res.data.fileId;
 
-                    var options = {
-                        quality: 80,
-                        destinationType: Camera.DestinationType.FILE_URI,
-                        sourceType: Camera.PictureSourceType.PHOTOLIBRARY,
-                        allowEdit: false,
-                        encodingType: Camera.EncodingType.JPEG,
-                        popoverOptions: CameraPopoverOptions,
-                        saveToPhotoAlbum: false,
-                        correctOrientation: true
-                    };
 
-                    $cordovaCamera.getPicture(options).then(function(imageData) {
-                        console.log(imageData)
-                        var options = {
-                            fileKey: "uploadfile",
-                            fileName: imageData.substr(imageData.lastIndexOf('/') + 1),
-                            chunkedMode: false,
-                            mimeType: "image/jpg",
-                            headers: {
-                                'x-access-token': localStorageService.get("auth_token")
-                            }
+                        //$scope.finalImage = JSON.parse(res.response);
+                        $scope.image.src = res.data.file[0].medium;
+
+                        //var profile_id = localStorageService.get("loggedInUser")._id;
+                        var profile_id = localStorageService.get("loggedInUserUid");
+                        var user_params = {
+                            profile_image_id: res.data.fileId
                         };
-                        //$scope.show();
-                        $scope.isLoading = true;
-                        $cordovaFileTransfer.upload('http://162.243.119.60:3000/upload/image?imageof=profile', imageData, options)
-                            .then(function(res) {
-                                console.log(JSON.stringify(localStorageService.get("loggedInUser")))
-                                console.log("success", JSON.parse(res.response))
-                                $scope.finalImage = JSON.parse(res.response);
-                                $scope.image.src = $scope.finalImage.data.file[0].medium;
-                                var profile_id = localStorageService.get("loggedInUser")._id;
-                                var user_params = {
-                                    profile_image_id: $scope.finalImage.data.fileId
-                                };
 
-                                User.updateprofile(user_params, profile_id)
-                                    .success(function(response) {
-                                        console.log(response)
-                                        localStorageService.set("loggedInUser", response.data)
-                                        $rootScope.user = localStorageService.get("loggedInUser")
-                                            //$rootScope.$broadcast('User_changed',{user: localStorageService.get("loggedInUser")})
-                                        console.log($scope.user)
-                                        $scope.isLoading = false;
-                                        //$scope.hide();
-                                    })
-                                    .error(function(err) {
-                                        //$scope.hide();
-                                        $scope.isLoading = false;
-
-                                    })
-
-
-                                // Success!
-                            }, function(err) {
-                                console.log(err)
+                        User.updateprofile(user_params, profile_id)
+                            .success(function(response) {
+                                console.log(response)
+                                localStorageService.set("loggedInUser", response.data)
+                                $rootScope.user = localStorageService.get("loggedInUser")
+                                    //$rootScope.$broadcast('User_changed',{user: localStorageService.get("loggedInUser")})
+                                console.log($scope.user)
                                 $scope.isLoading = false;
-                                // Error
-                            }, function(progress) {
-                                console.log("progress", progress)
-                                var value = ((progress.loaded / progress.total) * 100).toString().split(".")[0];
-                                $scope.loadedvalue = value;
-                            });
-                        //$rootScope.imageData = "data:image/jpeg;base64," + imageData;
-                        //$state.go('sidemenu.imagefilter');
+                                //$scope.hide();
+                            })
+                            .error(function(err) {
+                                //$scope.hide();
+                                $scope.isLoading = false;
 
-                        //var image = document.getElementById('myImage');
+                            })
+
+
 
                     }, function(err) {
-                        // error
-                        $scope.isLoading = false;
-                    });
+                        console.log("err", err);
+                    })
                 }
                 if (index == 1) {
-                    var options = {
-                        quality: 80,
-                        destinationType: Camera.DestinationType.FILE_URI,
-                        sourceType: Camera.PictureSourceType.CAMERA,
-                        allowEdit: false,
-                        encodingType: Camera.EncodingType.JPEG,
-                        popoverOptions: CameraPopoverOptions,
-                        saveToPhotoAlbum: false
-                    };
+                    $scope.isLoading = true;
+                    ImageUploadService.UploadNow('profile', false, false).then(function(res) {
+                        //$scope.imageData = res.data.file[0].medium;
+                        $scope.isloading = false;
+                        //$scope.final_obj.post_image_id = res.data.fileId;
 
-                    $cordovaCamera.getPicture(options).then(function(imageData) {
-                        console.log(imageData)
-                        var options = {
-                            fileKey: "uploadfile",
-                            fileName: imageData.substr(imageData.lastIndexOf('/') + 1),
-                            chunkedMode: false,
-                            mimeType: "image/jpg",
-                            headers: {
-                                'x-access-token': localStorageService.get("auth_token")
-                            }
+
+                        //$scope.finalImage = JSON.parse(res.response);
+                        $scope.image.src = res.data.file[0].medium;
+                        //var profile_id = localStorageService.get("loggedInUser")._id;
+                        var profile_id = localStorageService.get("loggedInUserUid");
+                        var user_params = {
+                            profile_image_id: res.data.fileId
                         };
-                        $scope.show();
-                        $cordovaFileTransfer.upload('http://162.243.119.60:3000/upload/image?imageof=profile', imageData, options)
-                            .then(function(res) {
-                                console.log(JSON.stringify(localStorageService.get("loggedInUser")))
-                                console.log("success", JSON.parse(res.response))
-                                $scope.finalImage = JSON.parse(res.response);
-                                $scope.image.src = $scope.finalImage.data.file[0].medium;
-                                var user_params = {
-                                        profile_image_id: $scope.finalImage.data.fileId
-                                    }
-                                    //User.updateprofile(user_params)
-                                $scope.hide();
-                                // Success!
-                            }, function(err) {
-                                console.log(err)
-                                    // Error
-                            }, function(progress) {
-                                // constant progress updates
-                            });
-                        //$rootScope.imageData = "data:image/jpeg;base64," + imageData;
-                        //$state.go('sidemenu.imagefilter');
-                        //$scope.image.src = "data:image/jpeg;base64," + imageData;
-                        //var image = document.getElementById('myImage');
-                        //image.src = "data:image/jpeg;base64," + imageData;
+
+                        User.updateprofile(user_params, profile_id)
+                            .success(function(response) {
+                                console.log(response)
+                                localStorageService.set("loggedInUser", response.data)
+                                $rootScope.user = localStorageService.get("loggedInUser")
+                                    //$rootScope.$broadcast('User_changed',{user: localStorageService.get("loggedInUser")})
+                                console.log($scope.user)
+                                $scope.isLoading = false;
+                                //$scope.hide();
+                            })
+                            .error(function(err) {
+                                //$scope.hide();
+                                $scope.isLoading = false;
+
+                            })
+
+
+
                     }, function(err) {
-                        // error
-                    });
+                        console.log("err", err);
+                    })
                 }
                 actionSheet();
             }
@@ -728,7 +867,7 @@ angular.module('app.controllers', [])
         options: {
             floor: 0,
             ceil: 20,
-            step: 2,
+            step: 1,
             translate: function(value) {
                 return value + 'km';
             }
@@ -778,7 +917,10 @@ angular.module('app.controllers', [])
     $scope.feeds = []
     var page = offset = 0;
     var limit = 5;
-    var uid = localStorageService.get('loggedInUser')._id;
+    //var uid = localStorageService.get('loggedInUser')._id;
+
+    //var profile_id = localStorageService.get("loggedInUser")._id;
+    var uid = localStorageService.get("loggedInUserUid");
     // var currentLatLng = localStorageService.get('currentLatLng');
     //var currentLatLng = new google.maps.LatLng(currentLatLng.lat, currentLatLng.lng);
     $scope.noMoreFeedContent = false;
@@ -880,6 +1022,21 @@ angular.module('app.controllers', [])
         console.log("index in on", args.ind)
         $scope.feeds.splice(args.ind, 1)
     })
+
+    $rootScope.$on('INCREASE_LIKE', function(event, args) {
+        $scope.feeds[args.index].feed.total_likes += 1;
+        $scope.feeds[args.index].isLiked = true;
+    })
+
+    $rootScope.$on('INCREASE_COMMENT', function(event, args) {
+        $scope.feeds[args.index].feed.total_comments += 1;
+    })
+
+    $rootScope.$on('DECREASE_LIKE', function(event, args) {
+        $scope.feeds[args.index].feed.total_likes -= 1;
+        $scope.feeds[args.index].isLiked = false;
+    })
+
     $scope.socialSharing = function(feed) {
         console.log(feed)
         $cordovaSocialSharing
@@ -894,39 +1051,40 @@ angular.module('app.controllers', [])
     }
     $scope.getpicture = function() {
         $state.go('sidemenu.createpost');
-        // var options = {
-        //     quality: 100,
-        //     destinationType: Camera.DestinationType.DATA_URL,
-        //     sourceType: Camera.PictureSourceType.CAMERA,
-        //     allowEdit: false,
-        //     encodingType: Camera.EncodingType.JPEG,
-        //     popoverOptions: CameraPopoverOptions,
-        //     saveToPhotoAlbum: false,
-        //     correctOrientation: true
-        // };
-
-        // $cordovaCamera.getPicture(options).then(function(imagedata) {
-
-        //     $scope.imageData = "data:image/jpeg;base64," + imagedata;
-
-        //     //$rootScope.postimagedata = imagedata;
-        //     $rootScope.postimagedata = "data:image/jpeg;base64," + imagedata;
-        //     $state.go('sidemenu.createpost');
-
-        //     //var image = document.getElementById('myImage');
-        //     //image.src = "data:image/jpeg;base64," + imageData;
-        // }, function(err) {
-        //     // error
-        // });
     }
 
-    $scope.navigateToFoodPost = function(postid) {
-        $state.go('sidemenu.foodprofile', { id: postid })
+    $scope.navigateToFoodPost = function(postid, ind) {
+        $state.go('sidemenu.foodprofile', { id: postid, index: ind })
     }
 
     $scope.navigateToUser = function(uid) {
+        $scope.usermodal.hide();
         $state.go('sidemenu.profile', { id: uid })
     }
+
+    $ionicModal.fromTemplateUrl('templates/partials/users.html', {
+        scope: $scope,
+        animation: 'slide-in-down'
+    }).then(function(modal) {
+        $scope.usermodal = modal;
+    });
+    $scope.openUserModal = function(postid) {
+        console.log("postid", postid)
+        Posts.getAllLikes(postid).success(function(res) {
+
+                console.log(res);
+                $scope.totalLikesUser = res.data.likes;
+            })
+            .error(function(err) {
+
+            })
+        $scope.usermodal.show();
+
+    };
+
+    $scope.closeUserModal = function() {
+        $scope.usermodal.hide();
+    };
 
 })
 
@@ -1068,11 +1226,6 @@ angular.module('app.controllers', [])
     var vm = this;
 
     $scope.isLoading = true;
-    // CategoriesServices.getAll().success(function(res) {
-    //     $scope.categories = res.data;
-    //     $scope.isLoading = false;
-
-    // })
 
     Posts.getCategories().success(function(res) {
             console.log(res);
@@ -1095,76 +1248,6 @@ angular.module('app.controllers', [])
         $scope.closeModal(null);
     };
 })
-
-.controller('LocationModalCtrl', ['$scope', '$q', '$cordovaGeolocation', function($scope, $q, $cordovaGeolocation) {
-    var vm = this;
-    $scope.gPlace;
-    $scope.data = {};
-
-    $scope.locationChanged = function(location) {
-        console.log("in location changed", location)
-        var geocoder = new google.maps.Geocoder();
-        geocoder.geocode({
-            address: location
-        }, function(results, status) {
-            if (status == google.maps.GeocoderStatus.OK) {
-                console.log("status", results[0].geometry.location.lat())
-                vm.location = results[0];
-                $q.resolve(results);
-            } else {
-                $q.reject();
-            }
-        });
-    }
-
-    vm.confirm = function(category) {
-        $scope.closeModal(category);
-    };
-
-    vm.cancel = function() {
-        $scope.closeModal(null);
-    };
-
-    $scope.selectLocation = function() {
-        console.log("hello")
-            //$scope.final_obj.location = [24.883040, 67.066413];
-        var posOptions = { timeout: 10000, enableHighAccuracy: false };
-        $cordovaGeolocation
-            .getCurrentPosition(posOptions)
-            .then(function(position) {
-
-                console.log("position is", position);
-                //24.876852, 67.062625
-                var lat = position.coords.latitude;
-                var long = position.coords.longitude;
-                console.log(lat);
-                console.log(long);
-
-                var geocoder = new google.maps.Geocoder();
-                var latlng = new google.maps.LatLng(lat, long);
-
-                geocoder.geocode({ 'latLng': latlng }, function(results, status) {
-                    if (status == google.maps.GeocoderStatus.OK) {
-                        if (results[1]) {
-                            //$scope.final_obj.location = results[1];
-                            console.log(results[1]); // details address
-                            $scope.data.address = results[1].formatted_address;
-                            $scope.locationChanged(results[1].formatted_address)
-                        } else {
-                            console.log('Location not found');
-                        }
-                    } else {
-                        console.log('Geocoder failed due to: ' + status);
-                    }
-                });
-            }, function(err) {
-                // error
-            });
-
-    }
-
-
-}])
 
 .controller('CategoriesModalCtrl', ['$scope', '$rootScope', function($scope, $rootScope) {
     var vm = this;
@@ -1364,7 +1447,7 @@ angular.module('app.controllers', [])
                 } else {
                     $scope.isLoading = false;
                     var confirmPopup = $ionicPopup.confirm({
-                        title: 'Your device GPS is off. Do you want turn on your GPS settings?'
+                        title: 'Your device GPS is off. Do you want turn on your GPS settings and try again?'
                     });
 
                     confirmPopup.then(function(res) {
@@ -1444,7 +1527,7 @@ angular.module('app.controllers', [])
     }
 })
 
-.controller('FoodProfileCtrl', function($scope, localStorageService, Posts, $stateParams, $ionicPopup) {
+.controller('FoodProfileCtrl', function($scope, $ionicModal, $rootScope, localStorageService, Posts, $stateParams, $ionicPopup) {
 
     $scope.$on('$ionicView.beforeEnter', function() {
         $scope.focus = true;
@@ -1489,9 +1572,12 @@ angular.module('app.controllers', [])
     //     comment: "Dil Dil Pakistan Jaan Jaan Pakistan! Dil Dil Pakistan Jaan Jaan Pakistan!",
     //     created: "few secs ago!"
     // }]
-    $scope.uid = localStorageService.get('loggedInUser')._id;
+    //$scope.uid = localStorageService.get('loggedInUser')._id;
+    $scope.uid = localStorageService.get("loggedInUserUid");
+
     $scope.isLoading = true;
     $scope.postid = $stateParams.id;
+    $scope.feedindex = $stateParams.index;
     Posts.get($stateParams.id).success(function(res) {
             console.log(res)
             $scope.post = res.data[0];
@@ -1522,6 +1608,8 @@ angular.module('app.controllers', [])
         Posts.addComment($scope.params, $scope.postid).success(function(res) {
                 console.log(res)
                 $scope.comments.push(res.data.comments)
+                $scope.post.total_comments += 1;
+                $rootScope.$broadcast('INCREASE_COMMENT', { index: $scope.feedindex });
                 $scope.params.text = "";
             })
             .error(function(err) {
@@ -1531,8 +1619,8 @@ angular.module('app.controllers', [])
 
     $scope.showConfirm = function(id) {
         var confirmPopup = $ionicPopup.confirm({
-            title: 'Consume Ice Cream',
-            template: 'Are you sure you want to eat this ice cream?'
+            title: 'Delete',
+            template: 'Are you sure you want to delete this comment?'
         });
         confirmPopup.then(function(res) {
             if (res) {
@@ -1541,6 +1629,8 @@ angular.module('app.controllers', [])
                         for (var i = 0; i < $scope.comments.length; i++) {
                             if (id == $scope.comments[i]._id) {
                                 $scope.comments.splice(i, 1);
+                                $scope.post.total_comments -= 1;
+                                $rootScope.$broadcast('DECREASE_COMMENT', { index: $scope.feedindex });
                             }
                         }
                     })
@@ -1551,6 +1641,30 @@ angular.module('app.controllers', [])
 
             }
         });
+    };
+
+    $ionicModal.fromTemplateUrl('templates/partials/users.html', {
+        scope: $scope,
+        animation: 'slide-in-down'
+    }).then(function(modal) {
+        $scope.usermodal = modal;
+    });
+    $scope.openUserModal = function(postid) {
+        console.log("postid", postid)
+        Posts.getAllLikes(postid).success(function(res) {
+
+                console.log(res);
+                $scope.totalLikesUser = res.data.likes;
+            })
+            .error(function(err) {
+
+            })
+        $scope.usermodal.show();
+
+    };
+
+    $scope.closeUserModal = function() {
+        $scope.usermodal.hide();
     };
 })
 
@@ -1997,25 +2111,6 @@ angular.module('app.controllers', [])
             infoWindow.setContent(content);
             infoWindow.open(map, this);
         });
-        // var content = '<div id="iw-container">' +
-        //     '<div class="iw-title">Porcelain Factory of Vista Alegre</div>' +
-        //     '<div class="iw-content">' +
-        //     '<div class="iw-subTitle">History</div>' +
-        //     '<img src="http://maps.marnoto.com/en/5wayscustomizeinfowindow/images/vistalegre.jpg" alt="Porcelain Factory of Vista Alegre" height="115" width="83">' +
-        //     '<p>Founded in 1824, the Porcelain Factory of Vista Alegre was the first industrial unit dedicated to porcelain production in Portugal. For the foundation and success of this risky industrial development was crucial the spirit of persistence of its founder, José Ferreira Pinto Basto. Leading figure in Portuguese society of the nineteenth century farm owner, daring dealer, wisely incorporated the liberal ideas of the century, having become "the first example of free enterprise" in Portugal.</p>' +
-        //     '<div class="iw-subTitle">Contacts</div>' +
-        //     '<p>VISTA ALEGRE ATLANTIS, SA<br>3830-292 Ílhavo - Portugal<br>' +
-        //     '<br>Phone. +351 234 320 600<br>e-mail: geral@vaa.pt<br>www: www.myvistaalegre.com</p>' +
-        //     '</div>' +
-        //     '<div class="iw-bottom-gradient"></div>' +
-        //     '</div>';
-
-
-
-        // google.maps.event.addListener(marker, 'click', function() {
-        //     infoWindow.open(map, marker);
-        // });
-
     }
 
 
@@ -2308,7 +2403,7 @@ angular.module('app.controllers', [])
     };
     $timeout(function() {
         HSSearch.init();
-    }, 500)
+    }, 100)
 
     $scope.next = function() {
         $state.go('process');

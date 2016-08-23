@@ -66,6 +66,7 @@ angular.module('app', ['ionic', 'ngCordova', 'ionic-datepicker', 'ngGeolocation'
         User.logout().success(function(res) {
                 localStorageService.set("auth_token", null);
                 localStorageService.set("loggedInUser", null);
+                localStorageService.set("loggedInUserUid", null);
                 $ionicLoading.hide()
                 $state.go('login')
             })
@@ -75,7 +76,7 @@ angular.module('app', ['ionic', 'ngCordova', 'ionic-datepicker', 'ngGeolocation'
 
     }
 
-    $rootScope.likeUnlikePost = function(likes, postid, data) {
+    $rootScope.likeUnlikePost = function(likes, postid, data, feedindex) {
         var uid = localStorageService.get('loggedInUser')._id;
         if (data.isLiked) {
             Posts.removeLike(postid)
@@ -84,6 +85,12 @@ angular.module('app', ['ionic', 'ngCordova', 'ionic-datepicker', 'ngGeolocation'
                     for (var i = 0; i < likes.length; i++) {
                         if (likes[i].user == uid) {
                             likes.splice(i, 1)
+                            if (data.feed) {
+                                data.feed.total_likes -= 1;
+                            } else {
+                                data.total_likes -= 1;
+                                $rootScope.$broadcast('DECREASE_LIKE', {index: feedindex});
+                            }
                         }
                     }
                 })
@@ -95,6 +102,12 @@ angular.module('app', ['ionic', 'ngCordova', 'ionic-datepicker', 'ngGeolocation'
                 .success(function(res) {
                     data.isLiked = true;
                     likes.push({ user: uid })
+                    if (data.feed) {
+                        data.feed.total_likes += 1;
+                    } else {
+                        data.total_likes += 1;
+                        $rootScope.$broadcast('INCREASE_LIKE', {index: feedindex});
+                    }
                 })
                 .error(function(err) {
 

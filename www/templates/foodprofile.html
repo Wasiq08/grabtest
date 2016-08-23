@@ -18,16 +18,23 @@
                 <img ng-src="{{post.media[0].medium}}" class="fd-img">
             </div>
             <div class="pll prm pts pbm">
-                <a ui-sref="sidemenu.foodprofile">
+                <a>
                     <p class="ft-18 ptx"><b>{{post.remark}}</b></p>
                 </a>
                 <p class="pts"><span class="prs" ng-repeat="tag in post.tag">#{{tag.desc || tag}}</span></p>
                 <p class="pts"><i ng-if="post.category != 'Select Category'" class="ion-soup-can-outline"></i><span ng-if="post.category != 'Select Category'" class="plx prs">{{post.category}}</span> <i class="ion-clock"></i><span class="plx prs" readable-time-filter time="conversation.createdTime" converted="readabletime">16 Min</span><i class="ion-ios-location"></i><span class="plx">{{post.loc_name}}</span></p>
             </div>
-            <div class="pll ptm pbm ft-24 border-style-top border-style-bottom">
+            <div ng-if="post.total_comments > 0 || post.total_likes >0">
+                <p style="margin-left:20px;"><span class="prm" ng-if="post.total_comments > 0">{{post.total_comments}} Comment</span> <span ng-click="openUserModal(post._id)">{{post.total_likes}} Likes</span></p>
+            </div>
+            <div class="pll pts pbs ft-18 border-style-top border-style-bottom">
+                <p><i class="ion-ios-chatboxes-outline"></i><span on-tap="navigateToFoodPost(post._id)" class="plm ft-16">Comment</span>
+                    <span on-tap="$root.likeUnlikePost(post.likes,post._id,post, feedindex)"><i class="{{post.isLiked == true ? 'ion-android-favorite like-color' : 'ion-android-favorite-outline'}} pll"></i><span  class="plm ft-16">Like</span></span><span ng-click="socialSharing(post)"><i class="ion-share pll"></i><span class="plm ft-16">Share</span></span><span ng-click="$root.showActionSheet(post.user.id, post._id, $index)" style="float:right; " class="prl ft-20"><i class="ion-android-more-vertical"></i></span></p>
+            </div>
+<!--             <div class="pll ptm pbm ft-24 border-style-top border-style-bottom">
                 <p><i class="ion-ios-chatboxes-outline"></i><span class="plm ft-18">Comment</span><span on-tap="$root.likeUnlikePost(post.likes,post._id,post)"><i class="{{post.isLiked == true ? 'ion-android-favorite like-color' : 'ion-android-favorite-outline'}} pll"></i><span  class="plm ft-18">Like</span></span>
                     <i class="ion-share pll"></i><span class="plm ft-18">Share</span></p>
-            </div>
+            </div> -->
             <div style="position: absolute; top: 100px; background-color: #ee3255; color: white; right: 0px; font-size: 32px;height: 40px;padding-top: 8px; padding-left: 8px; padding-right: 8px; padding-bottom: 8px;">$ {{post.price}}
             </div>
         </div>
@@ -43,7 +50,7 @@
     </ion-content>
     <ion-footer-bar class="custom-fd-bar fd-br-top sb-bg">
         <div style="width:100%;">
-            <textarea placeholder="Type your comment" style="width:95%;    padding: 12px 0px 0px 5px;" row="1"  ng-model="params.text" ></textarea>
+            <textarea placeholder="Type your comment" style="width:95%;    padding: 12px 0px 0px 5px;" row="1" ng-model="params.text"></textarea>
         </div>
         <div on-tap="comment()" style="float: right; padding-top:5px; padding-right:10px;" class="ft-32">
             <i class="ion-android-send"></i>
