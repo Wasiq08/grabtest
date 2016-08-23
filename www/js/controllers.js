@@ -4,7 +4,7 @@ angular.module('app.controllers', [])
     $scope.users = {};
     // $scope.users.user_email = 'ameerhamza810@gmail.com';
     // $scope.users.password = '123'
-
+    $scope.isButtonLoading = false;
     $scope.show = function() {
         $ionicLoading.show({
             template: 'Loading...'
@@ -24,7 +24,8 @@ angular.module('app.controllers', [])
             email: $scope.users.user_email,
             password: $scope.users.password
         };
-        $scope.show();
+        //$scope.show();
+        $scope.isButtonLoading = true;
         User.login(params).success(function(res) {
                 console.log(res)
                 if (res.meta.status == 200) {
@@ -35,11 +36,11 @@ angular.module('app.controllers', [])
                     console.log("in login", localStorageService.get("loggedInUser"))
                         //$rootScope.$broadcast('User_changed', {user: localStorageService.get("loggedInUser")})
                     if (res.data.auth.user.on_boarding == 0) {
-                        $scope.hide();
                         $state.go('welcome')
+                        $scope.isButtonLoading = false;
                     } else {
-                        $scope.hide();
                         $state.go('sidemenu.turn-on-location')
+                        $scope.isButtonLoading = false;
                     }
 
                 }
@@ -48,7 +49,8 @@ angular.module('app.controllers', [])
             .error(function(err) {
                 errors.push('Invalid Username/Password! ')
                 $scope.showAlert(errors);
-                $scope.hide();
+                //$scope.hide();
+                $scope.isButtonLoading = false;
             })
     }
 
@@ -118,50 +120,74 @@ angular.module('app.controllers', [])
     }
 
     var fbLoginSuccess = function(response) {
-        console.log(" in success")
-        if (!response.authResponse) {
-            fbLoginError("Cannot find the authResponse");
-            return;
-        }
+        console.log(" in success", response)
+        // if (!response.authResponse) {
+        //     fbLoginError("Cannot find the authResponse");
+        //     return;
+        // }
 
         var authResponse = response.authResponse;
 
-        getFacebookProfileInfo(success.authResponse)
+        getFacebookProfileInfo(authResponse)
             .then(function(profileInfo) {
                 // For the purpose of this example I will store user data on local storage
 
                 console.log(profileInfo);
                 console.log(profileInfo.email);
                 var UserObj = {
+                    id: profileInfo.id,
                     name: profileInfo.name,
                     email: profileInfo.email,
                     facebook: {
                         id: profileInfo.id,
                         name: profileInfo.name,
                         email: profileInfo.email,
-                        profile: "http://graph.facebook.com/" + success.authResponse.userID + "/picture?type=large"
+                        profile: "http://graph.facebook.com/" + profileInfo.id + "/picture?type=square"
                     }
                 }
-                User.registerWithFacebook(UserObj).success(function(result) {
+                User.registerWithFacebook(UserObj, profileInfo.id).success(function(result) {
                         console.log("in register with facebook", result);
-                        User.facebookAuthentication({ id: success.authResponse.userID }).success(function(res) {
-                            console.log("in facebookAuthentication", res)
-                            localStorageService.set("auth_token", res.meta.data.auth.token);
-                            localStorageService.set("loggedInUser", res.meta.data.auth.user);
-                            localStorageService.set("loggedInUserUid", res.meta.data.auth.user._id);
-                            $rootScope.user = localStorageService.get("loggedInUser");
-                            console.log("in login", localStorageService.get("loggedInUser"))
-                                //$rootScope.$broadcast('User_changed', {user: localStorageService.get("loggedInUser")})
-                            if (res.meta.data.auth.user.on_boarding == 0) {
-                                $scope.hide();
-                                $state.go('welcome')
-                            } else {
-                                $scope.hide();
-                                $state.go('sidemenu.turn-on-location')
-                            }
-                        })
+                        User.facebookAuthentication({ id: profileInfo.id }).success(function(res) {
+                                console.log("in facebookAuthentication", res)
+                                localStorageService.set("auth_token", res.data.auth.token);
+                                localStorageService.set("loggedInUser", res.data.auth.user);
+                                localStorageService.set("loggedInUserUid", res.data.auth.user._id);
+                                $rootScope.user = localStorageService.get("loggedInUser");
+                                console.log("in login", localStorageService.get("loggedInUser"))
+                                    //$rootScope.$broadcast('User_changed', {user: localStorageService.get("loggedInUser")})
+                                if (res.data.auth.user.on_boarding == 0) {
+                                    $scope.hide();
+                                    $state.go('welcome')
+                                } else {
+                                    $scope.hide();
+                                    $state.go('sidemenu.turn-on-location')
+                                }
+                            })
+                            .error(function(err) {
+                                console.log("in facebook auth error", err)
+                            })
                     })
                     .error(function(err) {
+                        User.facebookAuthentication({ id: profileInfo.id }).success(function(res) {
+                                console.log("in facebookAuthentication", res)
+                                localStorageService.set("auth_token", res.data.auth.token);
+                                localStorageService.set("loggedInUser", res.data.auth.user);
+                                localStorageService.set("loggedInUserUid", res.data.auth.user._id);
+                                $rootScope.user = localStorageService.get("loggedInUser");
+                                console.log("in login", localStorageService.get("loggedInUser"))
+                                    //$rootScope.$broadcast('User_changed', {user: localStorageService.get("loggedInUser")})
+                                if (res.data.auth.user.on_boarding == 0) {
+                                    $scope.hide();
+                                    $state.go('welcome')
+                                } else {
+                                    $scope.hide();
+                                    $state.go('sidemenu.turn-on-location')
+                                }
+                            })
+                            .error(function(err) {
+                                console.log("in facebook auth error", err)
+                            })
+                    }).error(function(err) {
                         console.log("in facebook auth error", err)
                     })
                     // UserService.setUser({
@@ -229,39 +255,58 @@ angular.module('app.controllers', [])
 
                         console.log(profileInfo.email);
                         var UserObj = {
+                            id: profileInfo.id,
                             name: profileInfo.name,
                             email: profileInfo.email,
                             facebook: {
                                 id: profileInfo.id,
                                 name: profileInfo.name,
                                 email: profileInfo.email,
-                                profile: "http://graph.facebook.com/" + success.authResponse.userID + "/picture?type=large"
+                                profile: "http://graph.facebook.com/" + success.authResponse.userID + "/picture?type=square"
                             }
                         }
-                        User.registerWithFacebook(UserObj).success(function(result) {
+                        User.registerWithFacebook(UserObj, profileInfo.id).success(function(result) {
                                 console.log("in register with facebook", result);
-                                User.facebookAuthentication({ id: success.authResponse.userID }).success(function(res) {
-                                    console.log("in facebookAuthentication", res)
-                                    localStorageService.set("auth_token", res.meta.data.auth.token);
-                                    localStorageService.set("loggedInUser", res.meta.data.auth.user);
-                                    localStorageService.set("loggedInUserUid", res.meta.data.auth.user._id);
-                                    $rootScope.user = localStorageService.get("loggedInUser");
-                                    console.log("in login", localStorageService.get("loggedInUser"))
-                                        //$rootScope.$broadcast('User_changed', {user: localStorageService.get("loggedInUser")})
-                                    if (res.meta.data.auth.user.on_boarding == 0) {
-                                        $scope.hide();
-                                        $state.go('welcome')
-                                    } else {
-                                        $scope.hide();
-                                        $state.go('sidemenu.turn-on-location')
-                                    }
-                                })
-                                .error(function(err) {
-                                    console.log("in facebook auth error", err)
-                                })
+                                User.facebookAuthentication({ id: profileInfo.id }).success(function(res) {
+                                        console.log("in facebookAuthentication", res)
+                                        localStorageService.set("auth_token", res.data.auth.token);
+                                        localStorageService.set("loggedInUser", res.data.auth.user);
+                                        localStorageService.set("loggedInUserUid", res.data.auth.user._id);
+                                        $rootScope.user = localStorageService.get("loggedInUser");
+                                        console.log("in login", localStorageService.get("loggedInUser"))
+                                            //$rootScope.$broadcast('User_changed', {user: localStorageService.get("loggedInUser")})
+                                        if (res.data.auth.user.on_boarding == 0) {
+                                            $scope.hide();
+                                            $state.go('welcome')
+                                        } else {
+                                            $scope.hide();
+                                            $state.go('sidemenu.turn-on-location')
+                                        }
+                                    })
+                                    .error(function(err) {
+                                        console.log("in facebook auth error", err)
+                                    })
                             })
                             .error(function(err) {
-
+                                User.facebookAuthentication({ id: profileInfo.id }).success(function(res) {
+                                        console.log("in facebookAuthentication", res)
+                                        localStorageService.set("auth_token", res.data.auth.token);
+                                        localStorageService.set("loggedInUser", res.data.auth.user);
+                                        localStorageService.set("loggedInUserUid", res.data.auth.user._id);
+                                        $rootScope.user = localStorageService.get("loggedInUser");
+                                        console.log("in login", localStorageService.get("loggedInUser"))
+                                            //$rootScope.$broadcast('User_changed', {user: localStorageService.get("loggedInUser")})
+                                        if (res.data.auth.user.on_boarding == 0) {
+                                            $scope.hide();
+                                            $state.go('welcome')
+                                        } else {
+                                            $scope.hide();
+                                            $state.go('sidemenu.turn-on-location')
+                                        }
+                                    })
+                                    .error(function(err) {
+                                        console.log("in facebook auth error", err)
+                                    })
                             })
                             // UserService.setUser({
                             //     authResponse: success.authResponse,
@@ -357,6 +402,7 @@ angular.module('app.controllers', [])
 
 .controller('signUpCtrl', function($scope, ionicDatePicker, $ionicLoading, localStorageService, $state, User, $ionicPopup, $rootScope) {
     $scope.user = {};
+    $scope.isButtonLoading = false;
     $scope.user.date_of_birth = "Enter here!"
     var ipObj1 = {
         callback: function(val) { //Mandatory
@@ -405,7 +451,8 @@ angular.module('app.controllers', [])
         if (errors.length != 0) {
             $scope.showAlert(errors);
         } else {
-            $scope.show();
+            //$scope.show();
+            $scope.isButtonLoading = true;
             User.register($scope.user).success(function(result) {
                     var params = {
                         email: $scope.user.email,
@@ -421,7 +468,8 @@ angular.module('app.controllers', [])
                                     //$rootScope.$broadcast('User_changed', {user: localStorageService.get("loggedInUser") });
                                 console.log($scope.user)
                                 $state.go('uploadimage')
-                                $scope.hide();
+                                $scope.isButtonLoading = false;
+                                //$scope.hide();
                             }
 
                         })
@@ -431,8 +479,9 @@ angular.module('app.controllers', [])
                 })
                 .error(function(err) {
                     errors.push('Email is already taken!')
+                    $scope.isButtonLoading = false;
                     $scope.showAlert(errors);
-                    $scope.hide();
+                    //$scope.hide();
                 })
         }
 
@@ -449,15 +498,6 @@ angular.module('app.controllers', [])
         alertPopup.then(function(res) {
             console.log('Thank you for not eating my delicious ice cream cone');
         });
-    };
-
-    $scope.show = function() {
-        $ionicLoading.show({
-            template: 'Loading...'
-        })
-    };
-    $scope.hide = function() {
-        $ionicLoading.hide()
     };
 })
 
@@ -982,6 +1022,21 @@ angular.module('app.controllers', [])
         console.log("index in on", args.ind)
         $scope.feeds.splice(args.ind, 1)
     })
+
+    $rootScope.$on('INCREASE_LIKE', function(event, args) {
+        $scope.feeds[args.index].feed.total_likes += 1;
+        $scope.feeds[args.index].isLiked = true;
+    })
+
+    $rootScope.$on('INCREASE_COMMENT', function(event, args) {
+        $scope.feeds[args.index].feed.total_comments += 1;
+    })
+
+    $rootScope.$on('DECREASE_LIKE', function(event, args) {
+        $scope.feeds[args.index].feed.total_likes -= 1;
+        $scope.feeds[args.index].isLiked = false;
+    })
+
     $scope.socialSharing = function(feed) {
         console.log(feed)
         $cordovaSocialSharing
@@ -998,13 +1053,38 @@ angular.module('app.controllers', [])
         $state.go('sidemenu.createpost');
     }
 
-    $scope.navigateToFoodPost = function(postid) {
-        $state.go('sidemenu.foodprofile', { id: postid })
+    $scope.navigateToFoodPost = function(postid, ind) {
+        $state.go('sidemenu.foodprofile', { id: postid, index: ind })
     }
 
     $scope.navigateToUser = function(uid) {
+        $scope.usermodal.hide();
         $state.go('sidemenu.profile', { id: uid })
     }
+
+    $ionicModal.fromTemplateUrl('templates/partials/users.html', {
+        scope: $scope,
+        animation: 'slide-in-down'
+    }).then(function(modal) {
+        $scope.usermodal = modal;
+    });
+    $scope.openUserModal = function(postid) {
+        console.log("postid", postid)
+        Posts.getAllLikes(postid).success(function(res) {
+
+                console.log(res);
+                $scope.totalLikesUser = res.data.likes;
+            })
+            .error(function(err) {
+
+            })
+        $scope.usermodal.show();
+
+    };
+
+    $scope.closeUserModal = function() {
+        $scope.usermodal.hide();
+    };
 
 })
 
@@ -1447,7 +1527,7 @@ angular.module('app.controllers', [])
     }
 })
 
-.controller('FoodProfileCtrl', function($scope, localStorageService, Posts, $stateParams, $ionicPopup) {
+.controller('FoodProfileCtrl', function($scope, $ionicModal, $rootScope, localStorageService, Posts, $stateParams, $ionicPopup) {
 
     $scope.$on('$ionicView.beforeEnter', function() {
         $scope.focus = true;
@@ -1497,6 +1577,7 @@ angular.module('app.controllers', [])
 
     $scope.isLoading = true;
     $scope.postid = $stateParams.id;
+    $scope.feedindex = $stateParams.index;
     Posts.get($stateParams.id).success(function(res) {
             console.log(res)
             $scope.post = res.data[0];
@@ -1527,6 +1608,8 @@ angular.module('app.controllers', [])
         Posts.addComment($scope.params, $scope.postid).success(function(res) {
                 console.log(res)
                 $scope.comments.push(res.data.comments)
+                $scope.post.total_comments += 1;
+                $rootScope.$broadcast('INCREASE_COMMENT', { index: $scope.feedindex });
                 $scope.params.text = "";
             })
             .error(function(err) {
@@ -1536,8 +1619,8 @@ angular.module('app.controllers', [])
 
     $scope.showConfirm = function(id) {
         var confirmPopup = $ionicPopup.confirm({
-            title: 'Consume Ice Cream',
-            template: 'Are you sure you want to eat this ice cream?'
+            title: 'Delete',
+            template: 'Are you sure you want to delete this comment?'
         });
         confirmPopup.then(function(res) {
             if (res) {
@@ -1546,6 +1629,8 @@ angular.module('app.controllers', [])
                         for (var i = 0; i < $scope.comments.length; i++) {
                             if (id == $scope.comments[i]._id) {
                                 $scope.comments.splice(i, 1);
+                                $scope.post.total_comments -= 1;
+                                $rootScope.$broadcast('DECREASE_COMMENT', { index: $scope.feedindex });
                             }
                         }
                     })
@@ -1556,6 +1641,30 @@ angular.module('app.controllers', [])
 
             }
         });
+    };
+
+    $ionicModal.fromTemplateUrl('templates/partials/users.html', {
+        scope: $scope,
+        animation: 'slide-in-down'
+    }).then(function(modal) {
+        $scope.usermodal = modal;
+    });
+    $scope.openUserModal = function(postid) {
+        console.log("postid", postid)
+        Posts.getAllLikes(postid).success(function(res) {
+
+                console.log(res);
+                $scope.totalLikesUser = res.data.likes;
+            })
+            .error(function(err) {
+
+            })
+        $scope.usermodal.show();
+
+    };
+
+    $scope.closeUserModal = function() {
+        $scope.usermodal.hide();
     };
 })
 

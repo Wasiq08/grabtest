@@ -15,25 +15,25 @@
                     <img ng-src="{{x.user.media[0].small}}" class="fd-img fd-img-br border-style">
                 </div>
             </a>
-            <div on-tap="navigateToUser(x.user.id)" class="ft-16" style="position: absolute; width: 100%; top: 18px; left: 75px">
-                <b>{{x.user.name}}</b><span class="ft-12" style="float: right;margin-right:80px;"><span class="plx prm">{{x.feed.createdTimeStamp | readableTime}}</span></span>
+            <div class="ft-16" style="position: absolute; width: 100%; top: 18px; left: 75px">
+                <span on-tap="navigateToUser(x.user.id)"><b>{{x.user.name}}</b></span><span class="ft-12" style="float: right;margin-right:80px;"><span class="plx prm">{{x.feed.createdTimeStamp | readableTime}}</span></span>
             </div>
             <div style="width: 100%; height: 200px;">
                 <img ng-src="{{x.feed.media[0].medium}}" class="fd-img">
             </div>
             <div class="pll prm pts pbm">
-                <a on-tap="navigateToFoodPost(x.feed._id)">
-                    <p class="ft-18 ptx"><b>{{x.feed.remark}}</b></p>
+                <a>
+                    <p class="ft-18 ptx"><span on-tap="navigateToFoodPost(x.feed._id, $index)" style="font-style:underline;"><b>{{x.feed.remark}}</b></span></p>
                 </a>
                 <p class="pts"><span class="prs" ng-repeat="tag in x.feed.tag">#{{tag.desc || tag}}</span></p>
                 <p class="pts"><span><i class="ion-soup-can-outline"></i><span class="plx prm">{{x.feed.category}}</span> </span><span><i class="ion-clock"></i><span class="plx prm">{{x.distance}}km</span></span><span ng-if="x.feed.loc_name"><i class="ion-ios-location"></i><span class="plx">{{x.feed.loc_name}}</span></span>
                 </p>
             </div>
             <div ng-if="x.feed.total_comments > 0 || x.feed.total_likes >0">
-                <p style="margin-left:20px;"><span class="prm"  ng-if="x.feed.total_comments > 0">{{x.feed.total_comments}} Comment</span> <span>{{x.feed.total_likes}} Likes</span></p>
+                <p style="margin-left:20px;"><span  on-tap="navigateToFoodPost(x.feed._id, $index)" class="prm" ng-if="x.feed.total_comments > 0">{{x.feed.total_comments}} Comment</span> <span on-tap="openUserModal(x.feed._id)">{{x.feed.total_likes}} Likes</span></p>
             </div>
             <div class="pll pts pbs ft-18 border-style-top border-style-bottom">
-                <p><i class="ion-ios-chatboxes-outline"></i><span on-tap="navigateToFoodPost(x.feed._id)" class="plm ft-16">Comment</span>
+                <p><i class="ion-ios-chatboxes-outline"></i><span on-tap="navigateToFoodPost(x.feed._id, $index)" class="plm ft-16">Comment</span>
                     <span on-tap="$root.likeUnlikePost(x.feed.likes,x.feed._id,x)"><i class="{{x.isLiked == true ? 'ion-android-favorite like-color' : 'ion-android-favorite-outline'}} pll"></i><span  class="plm ft-16">Like</span></span><span ng-click="socialSharing(x)"><i class="ion-share pll"></i><span class="plm ft-16">Share</span></span><span ng-click="$root.showActionSheet(x.user.id, x.feed._id, $index)" style="float:right; " class="prl ft-20"><i class="ion-android-more-vertical"></i></span></p>
             </div>
             <div style="position: absolute; top: 100px; background-color: #ee3255; color: white; right: 0px; font-size: 32px;height: 40px;padding-top: 8px; padding-left: 8px; padding-right: 8px; padding-bottom: 8px;">

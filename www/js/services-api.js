@@ -41,11 +41,8 @@ angular.module('CoreApi', ['CoreApiUtilities'])
         return httpService.$http.post(url, param, {});
     }
 
-    this.registerWithFacebook = function(param) {
-        var urlParam = {
-            register: 'facebook'
-        };
-        var url = httpService.Utils.buildUrl(new Array('register'), urlParam);
+    this.registerWithFacebook = function(param, facebookid) {
+        var url = httpService.Utils.buildUrl(new Array('register', 'facebook', facebookid));
         return httpService.$http.post(url, param, {})
     }
 
@@ -145,6 +142,12 @@ angular.module('CoreApi', ['CoreApiUtilities'])
     this.getAllComments = function(postid) {
         var config = httpService.Utils.getHeader();
         var url = httpService.Utils.buildUrl(new Array('posts', postid, 'comments'));
+        return httpService.$http.get(url, config);
+    }
+
+    this.getAllLikes = function(postid) {
+        var config = httpService.Utils.getHeader();
+        var url = httpService.Utils.buildUrl(new Array('posts', postid, 'like'));
         return httpService.$http.get(url, config);
     }
 
